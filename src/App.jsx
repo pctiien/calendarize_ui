@@ -1,13 +1,12 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Header from './components/Header';
-import Daily from './components/Daily';
-import Projects from './components/Projects';
+import { Outlet } from 'react-router-dom';
+
 function App() {
   return (
     <>
       <Header/>
-      <Projects/>
-      <Daily/>
+      <Outlet />
     </>
   )
 }
