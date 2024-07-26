@@ -2,8 +2,10 @@
 const Daily = (()=>{
     return (
         <div>
-            <div className="container text-center">
-               
+            <div className="container ">
+                <div>
+                    <h1 className=' fw-bold fs-2'>Daily Tasks</h1>
+                </div>
 
                 <div className="row">
                     <div className="col border border-1 " style={{maxWidth: '25%'}}>
