@@ -1,5 +1,7 @@
 import {useState,useEffect} from 'react';
 import { format } from "date-fns";
+import greentick from "../assets/green-tick.png"
+import stopwatch from "../assets/stop-watch.png"
 
 const Daily = (()=>{
     const [dailyTasks, setDailyTasks] = useState([[]]);
@@ -41,255 +43,50 @@ const Daily = (()=>{
                 <div>
                     <h1 className=' fw-bold fs-2'>Daily Tasks</h1>
                 </div>
+                {dailyTasks.length > 0 && dailyTasks.map((tasks, index) => (
+                    <div key={index} className="row ">
+                
+                    {tasks.length > 0 && (
+                        <>
+                        <div className="col border border-1 p-2 d-flex justify-content-center align-items-center" style={{ maxWidth: '15%' }}>
+                            {format(new Date(tasks[0].startDate), 'EEEE')} 
+                            <br/>
+                            {new Date(tasks[0].startDate).toLocaleDateString()}
+                        </div>
+                        <div className="col border border-1 d-flex gap-5 align-items-center py-2">
+                            {tasks.map(task => {
+                            const startDate = new Date(task.startDate);
+                            const formatStartDate = format(startDate, 'HH:mm');
 
-                <div className="row">
-                    <div className="col border border-1 " style={{maxWidth: '25%'}}>
-                    Monday
-                    </div>
-                    <div className="col border border-1 d-flex gap-5 align-items-center py-2">
-                        {
-                        dailyTasks[0].length > 0 ? (
+                            const endDate = new Date(task.endDate);
+                            const formatEndDate = format(endDate, 'HH:mm');
+                            
+                            let statusIcon = stopwatch 
+                            if(task.status == 'Done')
+                            {
+                                statusIcon = greentick
+                            }
 
-                            dailyTasks[0].map(task => {
-
-                                const startDate = new Date(task.startDate);
-                                const formatStartDate = format(startDate,'HH:mm');
-
-                                const endDate = new Date(task.endDate);
-                                const formatEndDate = format(endDate,'HH:mm');
-
-                                return (
-                                    <div key={task.id} className="d-flex flex-column flex-fill border border-2 col-2 rounded-3 bg-danger" style={{height:'50px'}}>
-                                        <div  className="d-flex flex-column align-items-start mx-3">
-                                            <p className="m-0 h-auto w-auto" style={{ fontSize: '15px' }}>{task.name}</p>
+                            return (
+                                <div key={task.id} className='shadow-sm d-flex flex-column align-items-start justify-content-center border rounded-2 w-auto h-auto  '>
+                                    <div className='d-flex '>
+                                        <div className="d-flex flex-column mx-4 my-3   ">
+                                            <p className=" m-0 h-auto w-auto" style={{ fontSize: '15px' }}>{task.name}</p>
                                             <p className="fw-light m-0" style={{ fontSize: '12px' }}>{formatStartDate} - {formatEndDate}</p>
                                         </div>
+                                        <div>
+                                            <img className='m-1' src={statusIcon} alt="" style={{width:'20px'}} />
+                                        </div>
                                     </div>
-
-                                )
-                            }
-                               
-                            ))
-                             : (
-                                <p>No tasks available</p>
-                            )}
-                            
-                        <div className="d-flex flex-column flex-fill border border-2 col-2 rounded-3 bg-dark-subtle" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0 h-auto w-auto" style={{fontSize:'15px'}}>Learning</p>
-                                <p className=" fw-light m-0 h-auto w-auto" style={{fontSize:'12px'}}>7:00 - 7:30</p>
-                            </div>
+                                </div>
+                            );
+                            })}
                         </div>
-                        <div className="d-flex flex-column flex-fill border border-2 col-2 rounded-3 bg-success " style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                            <p className=" m-0 h-auto w-auto" style={{fontSize:'15px'}}>Learning</p>
-                            <p className=" fw-light m-0" style={{fontSize:'12px'}}>8:00 - 10:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 col-2 rounded-3 bg-danger-subtle" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                            <p className=" m-0 h-auto w-auto" style={{fontSize:'15px'}}>Learning</p>
-                            <p className=" fw-light m-0" style={{fontSize:'12px'}}>10:00 - 12:00</p>
-                            </div>
-                        </div>
+                        </>
+                    )}
                     </div>
-
-                </div>
-
-                <div className="row">
-                    <div className="col border border-1 " style={{maxWidth: '25%'}}>
-                    Tuesday
-                    </div>
-                    <div className="col border border-1 d-flex gap-5 align-items-center py-2">
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                            <p className=" m-0 h-auto w-auto" style={{fontSize:'15px'}}>Learning</p>
-                            <p className=" fw-light m-0" style={{fontSize:'12px'}}>5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                            <p className=" m-0 h-auto w-auto" style={{fontSize:'15px'}}>Learning</p>
-                            <p className=" fw-light m-0" style={{fontSize:'12px'}}>5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                            <p className=" m-0 h-auto w-auto" style={{fontSize:'15px'}}>Learning</p>
-                            <p className=" fw-light m-0" style={{fontSize:'12px'}}>5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                            <p className=" m-0 h-auto w-auto" style={{fontSize:'15px'}}>Learning</p>
-                            <p className=" fw-light m-0" style={{fontSize:'12px'}}>5:00 - 6:00</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div className="row">
-                    <div className="col border border-1 " style={{maxWidth: '25%'}}>
-                    Wednesday
-                    </div>
-                    <div className="col border border-1 d-flex gap-5 align-items-center py-2">
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div className="row">
-                    <div className="col border border-1 " style={{maxWidth: '25%'}}>
-                    Thursday
-                    </div>
-                    <div className="col border border-1 d-flex gap-5 align-items-center py-2">
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <div className="row">
-                    <div className="col border border-1 " style={{maxWidth: '25%'}}>
-                    Friday
-                    </div>
-                    <div className="col border border-1 d-flex gap-5 align-items-center py-2">
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <div className="row">
-                    <div className="col border border-1 " style={{maxWidth: '25%'}}>
-                    Saturday
-                    </div>
-                    <div className="col border border-1 d-flex gap-5 align-items-center py-2">
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <div className="row">
-                    <div className="col border border-1 " style={{maxWidth: '25%'}}>
-                    Sunday
-                    </div>
-                    <div className="col border border-1 d-flex gap-5 align-items-center py-2">
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                        <div className="d-flex flex-column flex-fill border border-2 w-25 rounded-3" style={{height:'50px'}}>
-                            <div className="d-flex flex-column align-items-start mx-3">
-                                <p className=" m-0">Learning</p>
-                                <p className=" m-0">5:00 - 6:00</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+                ))}
+                       
             </div>
         </div>
 
