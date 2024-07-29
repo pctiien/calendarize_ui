@@ -1,7 +1,7 @@
 import {Modal,Button,Form} from 'react-bootstrap'
 import {useState,useEffect} from 'react'
 import axios from '../services/axios.js'
-
+import PropTypes from 'prop-types'
 const LifeTaskModal = (({show,handleClose,task})=>{
   const [formData, setFormData] = useState({
     id: '' ,
@@ -143,4 +143,18 @@ const LifeTaskModal = (({show,handleClose,task})=>{
   );
 }
 );
+
+LifeTaskModal.propsTypes ={
+  show: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  task : PropTypes.shape(
+    {
+      id: PropTypes.number.isRequired,
+      name:  PropTypes.string.isRequired ,
+      startDate: PropTypes.string.isRequired ,
+      endDate: PropTypes.string.isRequired ,
+      description: PropTypes.string,
+    }
+  )
+};
 export default LifeTaskModal;
