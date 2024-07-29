@@ -51,13 +51,33 @@ const LifeTaskModal = (({show,handleClose,task})=>{
       return; // Ngừng thực hiện nếu điều kiện không đúng
     }
     try {
-      const response = await axios.put('life/task', formData, {
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      if(task && task.id)
+      {
 
-      console.log('Save successful:', response.data);
+        const response = await axios.put('life/task', formData, {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        console.log('Update successful:', response.data);
+
+      }else{
+
+        const response = await axios.post('life/task', {
+          name : formData.name,
+          description : formData.description,
+          startDate : formData.startDate,
+          endDate : formData.endDate,
+          userId : 2
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        console.log('Create successful:', response.data);
+
+      }
       // Có thể thực hiện thêm hành động khác như thông báo thành công
     } catch (error) {
       console.error('There was a problem with the save operation:', error);
