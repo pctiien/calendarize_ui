@@ -6,12 +6,16 @@ import stopwatch from "../assets/stop-watch.png"
 import {Button} from 'react-bootstrap'
 import ConfirmModal from './ConfirmModal';
 import axios from '../services/axios.js'
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
+import Overdue from '../assets/overdue.png'
 const Daily = (()=>{
     const [dailyTasks, setDailyTasks] = useState([[]]);
     const [error, setError] = useState(null); // Thêm trạng thái lỗi
     const [show,setShow] = useState(false);
     const [selectedTask,setSelectedTask] = useState(null);
     const [showConfirmModal,setShowConfirmModal] = useState(false);
+    const [client, setClient] = useState(null);
 
     const handleCloseConfirmModal = ()=>{
         setSelectedTask(null);
@@ -54,7 +58,7 @@ const Daily = (()=>{
         setShow(true);
     };
     useEffect(() => {
-        const url = 'life/task?userId=2&start=2024-07-01&end=2024-08-01';
+        const url = 'life/task?userId=2&start=2024-07-15&end=2024-08-15';
         const fetchTasks = async () => {
 
             try {
@@ -76,6 +80,34 @@ const Daily = (()=>{
 
         fetchTasks();
     }, [selectedTask]);
+
+    useEffect(() => {
+        const socket = new SockJS('http://localhost:8080/ws');
+        const stompClient = new Client({
+            webSocketFactory: () => socket,
+            onConnect: (frame) => {
+                console.log('Connected: ' + frame);
+                stompClient.subscribe('/topic/notifications/2', (message) => {
+                    console.log('Notification received:', message.body);
+                });
+            },
+            onDisconnect: () => {
+                console.log('Disconnected');
+            },
+        });
+
+        stompClient.activate(); 
+        setClient(stompClient);
+
+        // Dọn dẹp khi component unmount
+        return () => {
+            if (client) {
+                client.deactivate();
+            }
+        };
+    }, []);
+
+    
     return (
 
         <div>
@@ -108,6 +140,10 @@ const Daily = (()=>{
                             if(task.status == 'Done')
                             {
                                 statusIcon = greentick
+                            }
+                            if(task.status == 'Overdue')
+                            {
+                                statusIcon = Overdue
                             }
 
                             return (
