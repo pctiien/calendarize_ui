@@ -1,6 +1,6 @@
 import {Modal,Button,Form} from 'react-bootstrap'
 import {useState,useEffect} from 'react'
-import axios from '../services/axios.js'
+import {lifeTasksApiInstance} from '../services/axios.js'
 import PropTypes from 'prop-types'
 const LifeTaskModal = (({show,handleClose,task})=>{
   const [formData, setFormData] = useState({
@@ -8,7 +8,8 @@ const LifeTaskModal = (({show,handleClose,task})=>{
     name:  '' ,
     startDate: '' ,
     endDate: '' ,
-    description: '' ,
+    description: '',
+    userId : ''
   });
 
   useEffect(() => {
@@ -20,6 +21,7 @@ const LifeTaskModal = (({show,handleClose,task})=>{
         startDate: task.startDate ? formatDateForInput(new Date(task.startDate)) : '',
         endDate: task.endDate ? formatDateForInput(new Date(task.endDate)) : '',
         description: task.description || '',
+        userId: task.userId
       });
     }
   }, [task]);
@@ -54,7 +56,7 @@ const LifeTaskModal = (({show,handleClose,task})=>{
       if(task && task.id)
       {
 
-        const response = await axios.put('life/task', formData, {
+        const response = await lifeTasksApiInstance.put('tasks',formData, {
           headers: {
             'Content-Type': 'application/json',
           }
@@ -63,12 +65,12 @@ const LifeTaskModal = (({show,handleClose,task})=>{
 
       }else{
 
-        const response = await axios.post('life/task', {
+        const response = await lifeTasksApiInstance.post('tasks',{
           name : formData.name,
           description : formData.description,
           startDate : formData.startDate,
           endDate : formData.endDate,
-          userId : 2
+          userId : 1
         }, {
           headers: {
             'Content-Type': 'application/json',

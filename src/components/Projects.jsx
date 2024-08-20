@@ -1,5 +1,5 @@
 import defaultAvt from '../assets/default_avatar.png'
-import axios from '../services/axios.js'
+import {projectApiInstance} from '../services/axios.js'
 import {Dropdown,Button,Modal,Form} from 'react-bootstrap'
 import {useState,useEffect} from 'react'
 import PropTypes from 'prop-types'
@@ -60,7 +60,7 @@ const Projects = (()=>{
             return; // Ngừng thực hiện nếu điều kiện không đúng
         }
         try {
-            const response = await axios.post(`project/task`, formAddTaskData, {
+            const response = await projectApiInstance.post('tasks',formAddTaskData, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -100,7 +100,7 @@ const Projects = (()=>{
         if(currentTask == null) return
     
         try{
-            const response = await axios.put(`project/task/${currentTask.id}`,{
+            const response = await projectApiInstance.put(`/${currentTask.id}`,{
                 headers :{
                     'Content-Type':"application/json"
                 }
@@ -122,7 +122,7 @@ const Projects = (()=>{
     //
     const handleAddMember = async () => {
         try {
-            const response = await axios.post(`projects/${selectedProject.id}/members?email=${memberEmail}`, {
+            const response = await projectApiInstance.post(`/${selectedProject.id}/user/1`, {
                 headers: {
                     'Content-Type': 'application/json'
                 }
@@ -143,7 +143,8 @@ const Projects = (()=>{
     const fetchTasksForProject = async(project)=>{
         if(project== null) return;
         try{
-            const response = await axios.get(`project/task/${project.id}`,{
+
+            const response = await projectApiInstance.get(`tasks?projectId=${project.id}`,{
                 headers:{
                     'Content-Type' : 'application/json'
                 }
@@ -164,7 +165,7 @@ const Projects = (()=>{
         const fetchProjects = async() =>{
 
             try{
-                const response = await axios.get('projects/2',{
+                const response = await projectApiInstance.get('1',{
                     headers:{
                         'Content-Type': 'application/json'                 
                     }
@@ -262,7 +263,7 @@ const Projects = (()=>{
                         <div onClick={()=>handleShowEditTaskModal(task)} key={index} className='m-0 d-flex gap-5'>
                         
                             <div className={`col d-flex justify-content-center align-items-center gap-3 p-2 rounded-5 ${
-                                                task.status === 'Done' ? 'bg-success' : 'bg-danger'
+                                                task.status === 'COMPLETED' ? 'bg-success' : 'bg-danger'
                                             }`}>
 
                                 <div className='d-flex flex-column rounded-5 px-3 py-1 bg-white'>

@@ -5,7 +5,7 @@ import greentick from "../assets/green-tick.png"
 import stopwatch from "../assets/stop-watch.png"
 import {Button} from 'react-bootstrap'
 import ConfirmModal from './ConfirmModal';
-import axios from '../services/axios.js'
+import {lifeTasksApiInstance} from '../services/axios.js'
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Overdue from '../assets/overdue.png'
@@ -32,7 +32,7 @@ const Daily = (()=>{
         }
         try {
           console.log('Task confirmed:', selectedTask);
-          const response = await axios.put(`life/task/${selectedTask.id}`,
+          const response = await lifeTasksApiInstance.put(`tasks/${selectedTask.id}`,
             {
                 headers: {
               'Content-Type': 'application/json',
@@ -58,11 +58,11 @@ const Daily = (()=>{
         setShow(true);
     };
     useEffect(() => {
-        const url = 'life/task?userId=2&start=2024-07-15&end=2024-08-15';
+        const url = 'tasks?userId=1&from=2024-05-01&to=2024-08-31';
         const fetchTasks = async () => {
 
             try {
-                const response = await axios.get(url,{
+                const response = await lifeTasksApiInstance.get(url,{
                     headers: {
                         'Content-Type': 'application/json',
                       } 
@@ -130,6 +130,7 @@ const Daily = (()=>{
                         </div>
                         <div className="col border border-1 d-flex gap-5 align-items-center py-2">
                             {tasks.map(task => {
+                                
                             const startDate = new Date(task.startDate);
                             const formatStartDate = format(startDate, 'HH:mm');
 
@@ -137,11 +138,11 @@ const Daily = (()=>{
                             const formatEndDate = format(endDate, 'HH:mm');
                             
                             let statusIcon = stopwatch 
-                            if(task.status == 'Done')
+                            if(task.status == 'COMPLETED')
                             {
                                 statusIcon = greentick
                             }
-                            if(task.status == 'Overdue')
+                            if(task.status == 'OVERDUE')
                             {
                                 statusIcon = Overdue
                             }
