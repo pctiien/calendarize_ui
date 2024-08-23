@@ -69,7 +69,7 @@ const Projects = (()=>{
             {
                 console.log('Task added:', response.data);
             }
-            fetchTasksForProject(selectedProject); // Cập nhật danh sách task sau khi thêm
+            setTasksProject(selectedProject.projectTasks)
             handleCloseAddTaskModal();
         } catch (e) {
             setError(e.message);
@@ -100,7 +100,7 @@ const Projects = (()=>{
         if(currentTask == null) return
     
         try{
-            const response = await projectApiInstance.put(`/${currentTask.id}`,{
+            const response = await projectApiInstance.put(`/tasks/${currentTask.id}`,{
                 headers :{
                     'Content-Type':"application/json"
                 }
@@ -137,29 +137,10 @@ const Projects = (()=>{
 
     const handleClickProject = (project)=>{
         setSelectedProject(project);
-        fetchTasksForProject(project);
+        setTasksProject(project.projectTasks)
         console.log(project)
     }
-    const fetchTasksForProject = async(project)=>{
-        if(project== null) return;
-        try{
 
-            const response = await projectApiInstance.get(`tasks?projectId=${project.id}`,{
-                headers:{
-                    'Content-Type' : 'application/json'
-                }
-            });
-            if(response!=null && response.data!=null)
-            {
-                console.log(response.data);
-                setTasksProject(response.data);
-            }
-            
-        }catch(e){
-            setError(e.message)
-            console.log(e.message)
-        }
-    }
 
     useEffect(()=>{
         const fetchProjects = async() =>{
@@ -175,7 +156,7 @@ const Projects = (()=>{
                 if(response.data!=null && response.data[0]!=null)
                 {
                     setSelectedProject(response.data[0])
-                    fetchTasksForProject(response.data[0])
+                    setTasksProject(response.data[0].projectTasks)
                 }
     
             }catch(e){
@@ -244,11 +225,11 @@ const Projects = (()=>{
                     <Button onClick={handleShowModal}  variant="outline-primary">Add new member</Button>{' '}
 
                     {
-                        selectedProject && selectedProject.users && selectedProject.users.length >0 
-                        && selectedProject.users.map((user,index)=>(
+                        selectedProject && selectedProject.members && selectedProject.members.length >0 
+                        && selectedProject.members.map((member,index)=>(
                             <div key={index}   className=' d-flex flex-column justify-content-center align-items-center'>
                             <img className=' border border-1 rounded-5 p-1' src={defaultAvt} alt="" style={{maxHeight:'30px',maxWidth:'30px'}} />
-                            <p className=' fw-medium' style={{ fontSize : '10px'}}>{user.name}</p>
+                            <p className=' fw-medium' style={{ fontSize : '10px'}}>{member.name}</p>
                             </div>
                         ))
                     }

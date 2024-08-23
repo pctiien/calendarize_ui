@@ -8,6 +8,8 @@ import ConfirmModal from './ConfirmModal';
 import {lifeTasksApiInstance} from '../services/axios.js'
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import Stomp from 'stompjs';
+
 import Overdue from '../assets/overdue.png'
 const Daily = (()=>{
     const [dailyTasks, setDailyTasks] = useState([[]]);
@@ -81,32 +83,34 @@ const Daily = (()=>{
         fetchTasks();
     }, [selectedTask]);
 
+
     useEffect(() => {
-        const socket = new SockJS('http://localhost:8080/ws');
+        const socket = new SockJS('http://localhost:8083/ws');
         const stompClient = new Client({
             webSocketFactory: () => socket,
             onConnect: (frame) => {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/topic/notifications/2', (message) => {
+                stompClient.subscribe('/user/1/queue/lifetasks', (message) => {
                     console.log('Notification received:', message.body);
                 });
             },
             onDisconnect: () => {
                 console.log('Disconnected');
             },
+            onStompError: (frame) => {
+                console.error('STOMP error:', frame);
+            }
         });
-
-        stompClient.activate(); 
-        setClient(stompClient);
-
-        // Dọn dẹp khi component unmount
+    
+        stompClient.activate();
+    
         return () => {
-            if (client) {
-                client.deactivate();
+            if (stompClient) {
+                stompClient.deactivate();
             }
         };
     }, []);
-
+    
     
     return (
 
