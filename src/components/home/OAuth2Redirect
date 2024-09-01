@@ -1,0 +1,9 @@
+import AuthContext from '../context/AuthContext'
+import {useContext,useState,useEffect} from 'react'
+function OAuth2Redirect(){
+    const {userLogin} = useContext(AuthContext)
+
+    const [redirect,setRedirect] = useState('/login')
+
+
+}

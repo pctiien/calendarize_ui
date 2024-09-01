@@ -8,7 +8,7 @@ function AuthProvider({children}) {
     const getUser =()=>{
         return user;
     }
-    const userLogin = (user)=>{
+    const userLogin = user=>{
         setUser(user);
     }
     const contextValue = {

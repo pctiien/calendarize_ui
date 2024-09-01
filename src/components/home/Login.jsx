@@ -1,27 +1,39 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate } from 'react-router-dom';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
 import {calendarizeApi} from '../misc/Api'
 import {useAuth} from '../context/AuthContext'
-import {useState} from 'react'
+import {useState,Navigate} from 'react'
+import {parseJwt} from '../misc/Helpers'
 const Login = () => {
-  const [email,setEmail] = useState('')
-  const [password,setPassword] = useState('')
-  const handleEmailChange = (e)=>{
-    setEmail(e.target.value)
+  const Auth = useAuth()
+  const navigate = useNavigate(); // Khởi tạo hook useNavigate
+  const [formData,setFormData] = useState({
+    email: '',
+    password: ''
+  })
+
+  const handleChange = (e)=>{
+    const { name, value } = e.target;
+    setFormData((prev)=>({...prev, [name]:value}))
   }
-  const handlePasswordChange = (e)=>{
-    setPassword(e.target.value)
-  }
-  const handleSubmit = (e)=>{
+ 
+  const handleSubmit = async(e)=>{
     e.preventDefault()
-    console.log('email :' + email)
-    console.log('password :' + password)
+    console.log('email :' + formData.email)
+    console.log('password :' + formData.password)
     try{
-      const response = calendarizeApi.authenticate(email,password)
-      if(response)
+      const response =await calendarizeApi.authenticate(formData.email,formData.password)
+      if(response && response.data)
       {
-        console.log('response: '+response)
+        const token = response.data
+        const data = parseJwt(token.accessToken)
+        console.log('data',data)
+        const authenticatedUser = {data,token}
+        console.log('user',authenticatedUser)
+        Auth.userLogin(authenticatedUser)
+        navigate('/');
+
       }
     }catch(e){
       console.log('error: ' +e.message)
@@ -33,18 +45,20 @@ const Login = () => {
       <div className="border p-4 rounded shadow-sm" style={{ maxWidth: '400px', width: '100%' }}>
         <h3 className="mb-4 text-center">Login</h3>
 
-        <div className="mb-3">
-          <label className="form-label">Email address</label>
-          <input type="email" className="form-control" placeholder="Enter email" />
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label className="form-label">Email address</label>
+            <input name = "email" onChange={handleChange} type="email" className="form-control" placeholder="Enter email" />
+          </div>
 
-        <div className="mb-3">
-          <label className="form-label">Password</label>
-          <input type="password" className="form-control" placeholder="Password" />
-        </div>
+          <div className="mb-3">
+            <label className="form-label">Password</label>
+            <input name = "password" onChange={handleChange} type="password" className="form-control" placeholder="Password" />
+          </div>
 
-        <button type="submit" className="btn btn-primary w-100 mb-3">Login</button>
+          <button type="submit" className="btn btn-primary w-100 mb-3">Login</button>
 
+        </form>
         <div className="text-center">
           <p className="mb-1">Or login with:</p>
           <div className="d-flex justify-content-center mb-3">
