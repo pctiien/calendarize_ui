@@ -1,9 +1,43 @@
-import AuthContext from '../context/AuthContext'
-import {useContext,useState,useEffect} from 'react'
-function OAuth2Redirect(){
-    const {userLogin} = useContext(AuthContext)
+import { useAuth } from '../context/AuthContext';
+import { useEffect } from 'react';
+import { parseJwt } from '../misc/Helpers';
+import { useNavigate } from 'react-router-dom';
 
-    const [redirect,setRedirect] = useState('/login')
+function OAuth2Redirect() {
+    const Auth = useAuth();
+    const navigate = useNavigate();
 
+    useEffect(() => {
+        const accessToken = extractUrlParameter('token');
+        if (accessToken) {
+            handleLogin(accessToken);
+        }
+    }, [navigate]);
 
+    useEffect(() => {
+        if (Auth.getUser()) {
+            console.log('User', Auth.getUser());
+        }
+    }, [Auth.getUser()]); 
+    
+    const extractUrlParameter = key => {
+        return new URLSearchParams(window.location.search).get(key);
+    };
+
+    const handleLogin = token => {
+        const data = parseJwt(token);
+        const user = {
+            data: data,
+            token: {
+                accessToken: token,
+                tokenType: 'Bearer'
+            }
+        };
+        Auth.userLogin(user);
+        navigate('/'); 
+    };
+
+    return null;
 }
+
+export default OAuth2Redirect;

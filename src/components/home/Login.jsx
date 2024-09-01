@@ -5,6 +5,7 @@ import {calendarizeApi} from '../misc/Api'
 import {useAuth} from '../context/AuthContext'
 import {useState,Navigate} from 'react'
 import {parseJwt} from '../misc/Helpers'
+import { getSocialLogin } from '../misc/Helpers';
 const Login = () => {
   const Auth = useAuth()
   const navigate = useNavigate(); // Khởi tạo hook useNavigate
@@ -32,6 +33,7 @@ const Login = () => {
         const authenticatedUser = {data,token}
         console.log('user',authenticatedUser)
         Auth.userLogin(authenticatedUser)
+      
         navigate('/');
 
       }
@@ -62,7 +64,7 @@ const Login = () => {
         <div className="text-center">
           <p className="mb-1">Or login with:</p>
           <div className="d-flex justify-content-center mb-3">
-            <a href="#" className="text-dark mx-2">
+            <a href={getSocialLogin('github')} className="text-dark mx-2">
               <FaGithub size={30} />
             </a>
             <a href="#" className="text-danger mx-2">
