@@ -1,16 +1,15 @@
 import {useState,useEffect} from 'react';
 import { format } from "date-fns";
-import LifeTaskModal from './LifeTaskModal'; // Đảm bảo đường dẫn đúng
-import greentick from "../assets/green-tick.png"
-import stopwatch from "../assets/stop-watch.png"
+import LifeTaskModal from './LifeTaskModal.jsx'; // Đảm bảo đường dẫn đúng
+import greentick from "../../assets/green-tick.png"
+import stopwatch from "../../assets/stop-watch.png"
 import {Button} from 'react-bootstrap'
-import ConfirmModal from './ConfirmModal';
-import {lifeTasksApiInstance} from '../services/axios.js'
+import ConfirmModal from '../ConfirmModal.jsx';
+import {lifeTasksApiInstance} from '../../services/axios.js'
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
-
-import Overdue from '../assets/overdue.png'
+import Overdue from '../../assets/overdue.png'
 const Daily = (()=>{
     const [dailyTasks, setDailyTasks] = useState([[]]);
     const [error, setError] = useState(null); // Thêm trạng thái lỗi

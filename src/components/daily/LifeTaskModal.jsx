@@ -1,6 +1,6 @@
 import {Modal,Button,Form} from 'react-bootstrap'
 import {useState,useEffect} from 'react'
-import {lifeTasksApiInstance} from '../services/axios.js'
+import {lifeTasksApiInstance} from '../../services/axios.js'
 import PropTypes from 'prop-types'
 const LifeTaskModal = (({show,handleClose,task})=>{
   const [formData, setFormData] = useState({

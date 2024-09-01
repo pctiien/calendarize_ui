@@ -1,5 +1,5 @@
-import defaultAvt from '../assets/default_avatar.png'
-import {projectApiInstance} from '../services/axios.js'
+import defaultAvt from '../../assets/default_avatar.png'
+import {projectApiInstance} from '../../services/axios.js'
 import {Dropdown,Button,Modal,Form} from 'react-bootstrap'
 import {useState,useEffect} from 'react'
 import PropTypes from 'prop-types'

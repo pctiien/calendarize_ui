@@ -3,10 +3,10 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import { BrowserRouter,Routes,Route } from 'react-router-dom'
-import Daily from './components/Daily.jsx'
-import Projects from './components/Projects.jsx'
-import Login from './components/Login.jsx'
-import Signup from './components/Signup.jsx'
+import Daily from './components/daily/Daily.jsx'
+import Projects from './components/projects/Projects.jsx'
+import Login from './components/home/Login.jsx'
+import Signup from './components/home/Signup.jsx'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

@@ -1,8 +1,33 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link } from 'react-router-dom';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
-
+import {calendarizeApi} from '../misc/Api'
+import {useAuth} from '../context/AuthContext'
+import {useState} from 'react'
 const Login = () => {
+  const [email,setEmail] = useState('')
+  const [password,setPassword] = useState('')
+  const handleEmailChange = (e)=>{
+    setEmail(e.target.value)
+  }
+  const handlePasswordChange = (e)=>{
+    setPassword(e.target.value)
+  }
+  const handleSubmit = (e)=>{
+    e.preventDefault()
+    console.log('email :' + email)
+    console.log('password :' + password)
+    try{
+      const response = calendarizeApi.authenticate(email,password)
+      if(response)
+      {
+        console.log('response: '+response)
+      }
+    }catch(e){
+      console.log('error: ' +e.message)
+    }
+  
+  }
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
       <div className="border p-4 rounded shadow-sm" style={{ maxWidth: '400px', width: '100%' }}>

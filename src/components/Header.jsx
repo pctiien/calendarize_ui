@@ -24,7 +24,7 @@ const Header = () => {
 
         <Dropdown.Menu align="end">
           <Dropdown.Item as={Link} to="/login">Login</Dropdown.Item>
-          <Dropdown.Item as={Link} to="/logout">Logout</Dropdown.Item>
+          <Dropdown.Item as={Link} to="/signup">Logout</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
     </div>
