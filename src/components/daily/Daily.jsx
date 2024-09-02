@@ -3,6 +3,8 @@ import { format } from "date-fns";
 import LifeTaskModal from './LifeTaskModal.jsx'; // Đảm bảo đường dẫn đúng
 import greentick from "../../assets/green-tick.png"
 import stopwatch from "../../assets/stop-watch.png"
+import rightArrow from "../../assets/right-arrow.png"
+import leftArrow from "../../assets/left-arrow.png"
 import {Button} from 'react-bootstrap'
 import ConfirmModal from '../ConfirmModal.jsx';
 import {lifeTasksApiInstance} from '../../services/axios.js'
@@ -114,12 +116,38 @@ const Daily = (()=>{
     return (
 
         <div>
-            <div className="container " style={{backgroundColor :'#F2F3F5'}}>
+            <div className="container m-0 mx-5 " style={{}}>
 
-                <div className='d-flex gap-5 p-3 '>
-                    <h1 className=' fw-bold fs-2'>Daily Tasks</h1>
-                    <Button onClick={()=>handleShow({})}  variant="primary">Add task</Button>{' '}
-
+                <div className='d-flex gap-5 fw-bold fs-2 '>
+                    Daily Tasks
+                </div>
+                <div className='d-flex gap-5'
+                    style={{maxHeight: '25px'}} >
+                    <div className='d-flex gap-1 align-content-center justify-content-center'
+                    >
+                        <div className=' bg-primary rounded-start-3 d-flex justify-content-center align-items-center'>
+                            <img
+                                className='p-1'
+                                src={leftArrow}
+                                alt="Daily"
+                                style={{ width: '15px', height: '15px' }}
+                            />
+                        </div>
+                        <div className=' bg-primary d-flex align-items-center '>
+                            <h6 className='fw-normal px-3'>Mon 28 Sept</h6>
+                        </div>
+                        <div className=' bg-primary rounded-end-3 d-flex justify-content-center align-items-center'>
+                            <img
+                                className='m-0 p-1'
+                                src={rightArrow}
+                                alt="Daily"
+                                style={{ width: '15px', height: '15px' }}
+                            />
+                        </div>
+                    </div>
+                    <div className=' bg-primary rounded-3 '>
+                        <h6 className=' text-white fw-normal px-3'>Add task</h6>
+                    </div>
                 </div>
                 {dailyTasks.length > 0 && dailyTasks.map((tasks, index) => (
                     <div key={index} className="row ">

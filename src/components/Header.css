@@ -1,0 +1,17 @@
+.nav-item {
+  position: relative;
+  display: inline-block; /* Đảm bảo lớp overlay không làm giảm kích thước của nav-item */
+}
+
+.overlay {
+  position: absolute;
+  top: -3px; /* Kích thước của overlay lớn hơn item chính */
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  background-color: rgba(255, 255, 255, 0.3); /* Màu nền của overlay */
+  border-radius: 5px; /* Bo tròn góc */
+  box-sizing: border-box;
+  z-index: -1; /* Đảm bảo overlay nằm dưới nội dung */
+  transition: opacity 0.3s ease;
+}
