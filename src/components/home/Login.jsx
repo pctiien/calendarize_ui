@@ -1,4 +1,3 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { Link,useNavigate } from 'react-router-dom';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
 import {calendarizeApi} from '../misc/Api'

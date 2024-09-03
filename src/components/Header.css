@@ -1,17 +1,43 @@
-.nav-item {
-  position: relative;
-  display: inline-block; /* Đảm bảo lớp overlay không làm giảm kích thước của nav-item */
+/* Đảm bảo dropdown hiển thị ở bên phải của avatar */
+.dropdown {
+  position: absolute;
+  left: 100%;
+  top: -50%; /* Đặt dropdown ngay dưới avatar */
+  width: 12rem; /* Điều chỉnh kích thước theo nhu cầu */
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 0.375rem; /* Điều chỉnh bo góc nếu cần */
+  z-index: 50;
 }
 
-.overlay {
+.dropdown-link {
+  display: block;
+  padding: 0.5rem 1rem;
+  color: #4a5568; /* Màu chữ */
+  text-decoration: none;
+}
+
+.nav-item {
+  position: relative;
+  display: block;
+  padding: 0.5rem;
+  text-align: center;
+  overflow: hidden; /* Đảm bảo pseudo-element không tràn ra ngoài */
+}
+
+.nav-item img {
+  width: 1.5rem; /* Kích thước của icon */
+  height: 1.5rem;
+}
+
+.nav-item.active::after {
+  content: '';
   position: absolute;
-  top: -3px; /* Kích thước của overlay lớn hơn item chính */
-  left: -3px;
-  right: -3px;
-  bottom: -3px;
-  background-color: rgba(255, 255, 255, 0.3); /* Màu nền của overlay */
-  border-radius: 5px; /* Bo tròn góc */
-  box-sizing: border-box;
-  z-index: -1; /* Đảm bảo overlay nằm dưới nội dung */
-  transition: opacity 0.3s ease;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #36375A;
+  border-radius: 10%;
+  z-index: -1; /* Đặt pseudo-element dưới nội dung của item */
 }
