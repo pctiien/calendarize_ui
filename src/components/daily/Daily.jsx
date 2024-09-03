@@ -31,6 +31,19 @@ const Daily = () => {
         return today;
     });
 
+    const handleNextClick = ()=>{
+        const nextDay = new Date(to)
+        nextDay.setDate(nextDay.getDate()+1)
+        setTo(nextDay)
+        setGetClick(!getClick)
+    }
+    const handleBackClick = () =>{
+        const backDate = new Date(from)
+        backDate.setDate(backDate.getDate()-1)
+        setFrom(backDate)
+        setGetClick(!getClick)
+    }
+
     const handleFromToButtonClick = () => {
         setShowForm(!showForm);
       };
@@ -67,7 +80,7 @@ const Daily = () => {
     };
      
     const handleGetClick = ()=>{
-        setGetClick(true);
+        setGetClick(!getClick)
         setShowForm(false);
     }
     const formatDate = (date) => {
@@ -167,7 +180,7 @@ const Daily = () => {
                 </div>
                 <div className="flex gap-5 mb-5 font-semibold align-items-start">
                     <div className='flex gap-1  '>
-                        <button className="bg-violet-100 text-white w-6 h-6 rounded-l p-1 flex items-center justify-center">
+                        <button onClick={handleBackClick} className="bg-violet-100 text-white w-6 h-6 rounded-l p-1 flex items-center justify-center">
                             <img src={leftArrow} alt="Previous" className="w-2 h-2 " />
                         </button>
                         <button onClick={handleFromToButtonClick} className="bg-violet-100 h-6 px-3 text-violet-500 flex items-center">
@@ -180,7 +193,7 @@ const Daily = () => {
                         </button>
                         
 
-                        <button className="bg-violet-100 w-6 h-6  text-violet-600 rounded-r p-1 flex items-center justify-center">
+                        <button onClick={handleNextClick} className="bg-violet-100 w-6 h-6  text-violet-600 rounded-r p-1 flex items-center justify-center">
                             <img src={rightArrow} alt="Next" className="w-2 h-2" />
                         </button>
                         {showForm && (

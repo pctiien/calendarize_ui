@@ -200,7 +200,7 @@ const LifeTaskModal = ({ show, handleClose, task }) => {
             Close
           </button>
           <button
-            className={`bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`bg-violet-500 text-white px-4 py-2 rounded hover:bg-green-600 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={handleSave}
             disabled={loading}
           >
