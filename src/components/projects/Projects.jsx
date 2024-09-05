@@ -1,422 +1,417 @@
 import defaultAvt from '../../assets/default_avatar.png'
-import {projectApiInstance} from '../../services/axios.js'
-import {Dropdown,Button,Modal,Form} from 'react-bootstrap'
-import {useState,useEffect} from 'react'
+import { projectApiInstance } from '../../services/axios.js'
+import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-
-
-const Projects = (()=>{
-    const [error,setError] = useState(null)
-    const [projects,setProjects] = useState([])
-    const [selectedProject,setSelectedProject] = useState(null)
-    const [tasksProject,setTasksProject] = useState([])
-    const formatDateDisplay = (date) => {
-        const localDate = new Date(date);
-        const year = localDate.getFullYear();
-        const month = String(localDate.getMonth() + 1).padStart(2, '0');
-        const day = String(localDate.getDate()).padStart(2, '0');
-        const hours = String(localDate.getHours()).padStart(2, '0');
-        const minutes = String(localDate.getMinutes()).padStart(2, '0');
-        return `${hours}:${minutes} ${month}-${day}-${year}`;
-      };
-    // Modal setting
-    const [showModal,setShowModal] = useState(false)
-    const [memberEmail,setMemberEmail] = useState(null)
-
-
-    const handleShowModal = () => setShowModal(true);
-    const handleCloseModal = () => setShowModal(false);
-
-    // Modal update setting
+import rightArrow from "../../assets/right-arrow.png";
+import leftArrow from "../../assets/left-arrow.png";
+const Projects = () => {
+    const [error, setError] = useState(null)
+    const [projects, setProjects] = useState([])
+    const [selectedProject, setSelectedProject] = useState(null)
+    const [tasksProject, setTasksProject] = useState([])
     const [showEditTaskModal, setShowEditTaskModal] = useState(false)
     const [currentTask, setCurrentTask] = useState(null)
-    
-    // Modal add task setting
-    const [showAddTaskModal, setShowAddTaskModal] = useState(false);
-    const handleShowAddTaskModal = () => setShowAddTaskModal(true);
-    const handleCloseAddTaskModal = () => setShowAddTaskModal(false);
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormAddTaskData((prev) => ({ ...prev, [name]: value }));
-      };
-    const [formAddTaskData, setFormAddTaskData] = useState({
-        name:  '' ,
-        startDate: '' ,
-        endDate: '' ,
-        description: '' ,
-        projectId: '',
-      });
-    const handleSaveNewTask = async () => {
-        // Lấy dữ liệu từ các trường trong form
-        if(formAddTaskData == null) return;
-        formAddTaskData.projectId = selectedProject ? selectedProject.id : '';
+    const [showAddTaskModal, setShowAddTaskModal] = useState(false)
+    const [showProjectModal, setShowProjectModal] = useState(false)
+    const [showMemberModal,setShowMemberModal] = useState(false)
+    const [projectMembers,setProjectMembers] = useState([])
+  const [formAddTaskData, setFormAddTaskData] = useState({
+    name: '',
+    startDate: '',
+    endDate: '',
+    description: '',
+    projectId: '',
+  })
 
-        const _startDate = new Date(formAddTaskData.startDate);
-        const _endDate = new Date(formAddTaskData.endDate);
+  const formatDateDisplay = (date) => {
+    const localDate = new Date(date)
+    const year = localDate.getFullYear()
+    const month = String(localDate.getMonth() + 1).padStart(2, '0')
+    const day = String(localDate.getDate()).padStart(2, '0')
+    const hours = String(localDate.getHours()).padStart(2, '0')
+    const minutes = String(localDate.getMinutes()).padStart(2, '0')
+    return `${hours}:${minutes}`
+  }
+  const handleShowMemberModal = ()=> setShowMemberModal(true)
+  const handleShowProjectModal = () => setShowProjectModal(!showProjectModal)
+  const handleCloseProjectModal = () => setShowProjectModal(false)
+  const handleShowAddTaskModal = () => setShowAddTaskModal(true)
+  const handleCloseAddTaskModal = () => setShowAddTaskModal(false)
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormAddTaskData((prev) => ({ ...prev, [name]: value }))
+  }
 
-        if(_startDate > _endDate){
-            console.log(_startDate.getTime() + " "+_endDate.getTime())
-            setError('Start date must be earlier than end date.');
-            return; // Ngừng thực hiện nếu điều kiện không đúng
-        }
-        try {
-            const response = await projectApiInstance.post('tasks',formAddTaskData, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            if(response && response.data)
-            {
-                console.log('Task added:', response.data);
-            }
-            setTasksProject(selectedProject.projectTasks)
-            handleCloseAddTaskModal();
-        } catch (e) {
-            setError(e.message);
-            console.error('There was a problem with the add task operation:', e);
-        }
-        setFormAddTaskData({
-            name:  '' ,
-            startDate: '' ,
-            endDate: '' ,
-            description: '' ,
-            projectId: '',
-          });
-    };
-    
+  const handleSaveNewTask = async () => {
+    if (!formAddTaskData) return
+    formAddTaskData.projectId = selectedProject ? selectedProject.id : ''
 
-    const handleShowEditTaskModal = (task) => {
-        setCurrentTask(task)
-        setShowEditTaskModal(true)
+    const _startDate = new Date(formAddTaskData.startDate)
+    const _endDate = new Date(formAddTaskData.endDate)
+
+    if (_startDate > _endDate) {
+      setError('Start date must be earlier than end date.')
+      return
     }
 
-    const handleCloseEditTaskModal = () => setShowEditTaskModal(false)
-    const handleSaveTask = async () => {
-        // Add your save task logic here
-        console.log('Task saved:', currentTask)
-        handleCloseEditTaskModal()
+    try {
+      const response = await projectApiInstance.post('tasks', formAddTaskData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (response && response.data) {
+        console.log('Task added:', response.data)
+      }
+      setTasksProject(selectedProject.projectTasks)
+      handleCloseAddTaskModal()
+    } catch (e) {
+      setError(e.message)
     }
-    const handleMarkTaskAsDone = async () => {
-        if(currentTask == null) return
-    
-        try{
-            const response = await projectApiInstance.put(`/tasks/${currentTask.id}`,{
-                headers :{
-                    'Content-Type':"application/json"
+
+    setFormAddTaskData({
+      name: '',
+      startDate: '',
+      endDate: '',
+      description: '',
+      projectId: '',
+    })
+  }
+
+  const handleShowEditTaskModal = (task) => {
+    setCurrentTask(task)
+    setShowEditTaskModal(true)
+  }
+
+  const handleCloseEditTaskModal = () => setShowEditTaskModal(false)
+
+
+
+  const handleMarkTaskAsDone = async () => {
+    if (!currentTask) return
+
+    try {
+      const response = await projectApiInstance.put(`/tasks/${currentTask.id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      if (response && response.data) {
+        console.log(response.data)
+        setProjectMembers(response.data.members)
+      }
+    } catch (e) {
+      setError(e.message)
+    }
+    handleCloseEditTaskModal()
+  }
+
+  const handleAddMember = async () => {
+    try {
+      const response = await projectApiInstance.post(
+        `/${selectedProject.id}/user/1`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      handleCloseProjectModal()
+    } catch (e) {
+      setError(e.message)
+    }
+  }
+
+  const fetchProjectTasks = async(project) =>{
+    try{
+        if(project && project.id)
+        {
+            const response = await projectApiInstance.get('',{
+                params:{
+                    projectId: project?.id
                 }
             })
-            if(response && response.data)
+            if(response && response.data){
+                console.log('tasks',response.data)
+                setProjectMembers(response.data.members)
+                console.log('members',projectMembers)
+            }
+        }
+    }catch(e)
+    {
+        console.log(e.message)
+    }
+  }
+  const handleClickProject = async(project) => {
+    setSelectedProject(project)
+    fetchProjectTasks(selectedProject)
+  }
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await projectApiInstance.get('', {
+            params :{
+                userId : 1
+            },
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        if (response && response.data &&  response.data[0]) {
+            setProjects(response.data)
+            if(response.data[0])
             {
-                console.log(response.data)
-                
+                setSelectedProject(response.data[0])
             }
-        }catch(e)
-        {
-            setError(e.message)
-            console.error('There was a problem with the done task operation:', e);
-        }
-        console.log('Task marked as done:', currentTask)
-
-        handleCloseEditTaskModal()
-    }
-    //
-    const handleAddMember = async () => {
-        try {
-            const response = await projectApiInstance.post(`/${selectedProject.id}/user/1`, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            console.log('Member added:', response.data);
-            handleCloseModal();
-        } catch (e) {
-            setError(e.message);
-            console.error('There was a problem with the add member operation:', e);
-        }
-    };
-
-    const handleClickProject = (project)=>{
-        setSelectedProject(project);
-        setTasksProject(project.projectTasks)
-        console.log(project)
-    }
-
-
-    useEffect(()=>{
-        const fetchProjects = async() =>{
-
-            try{
-                const response = await projectApiInstance.get('1',{
-                    headers:{
-                        'Content-Type': 'application/json'                 
-                    }
-                });
-                console.log(response.data)
-                setProjects(response.data)
-                if(response.data!=null && response.data[0]!=null)
-                {
-                    setSelectedProject(response.data[0])
-                    setTasksProject(response.data[0].projectTasks)
-                }
-    
-            }catch(e){
-                setError(e.message)
-                console.error('There was a problem with the fetch operation:', e);
-            }
-        }
-        fetchProjects();
         
-    },[])
-
-    return (
-
-        
-        <div className=" d-flex flex-column container p-0">
-            
-            <div className='d-flex gap-3 p-2'>
-                <Dropdown>
-                    <Dropdown.Toggle variant="success" id="dropdown-basic">
-                        {selectedProject ? selectedProject.name : ''}
-                    </Dropdown.Toggle>
-
-                    <Dropdown.Menu>
-                        {
-                            projects!=null && projects.length >0 
-                            && projects.filter(project => project.id != selectedProject?.id)
-                            && projects.map((project,index)=>(
-                                <Dropdown.Item key={index} onClick ={()=>{handleClickProject(project)}}>{project.name}</Dropdown.Item>
-                            ))
-                        }
-                    </Dropdown.Menu>
-                </Dropdown>
-                <Button onClick={handleShowAddTaskModal}  variant="primary">Add new task</Button>
-
-
+        }
+      } catch (e) {
+        setError(e.message)
+      }
+    }
+    fetchProjects()
+  }, [])
+  useEffect(() => {
+        if (selectedProject) {
+            fetchProjectTasks(selectedProject);
+        }
+    }, [selectedProject]);
+  return (
+    <div className=" mx-10 ml-20 ">
+        <div className="mb-5">
+            <div className="flex relative mb-5">
+                <div
+                    className= "text-black font-bold text-2xl cursor-pointer"
+                    onClick={handleShowProjectModal}
+                >
+                    {selectedProject ? selectedProject.name : 'Select Project'}
+                    </div>
+                {showProjectModal && (
+                    <ul className="absolute mt-10 bg-white shadow-lg rounded-md w-44">
+                    {projects
+                        ?.filter((project) => project.id !== selectedProject?.id)
+                        .map((project, index) => (
+                        <li
+                            key={index}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => handleClickProject(project)}
+                        >
+                            {project.name}
+                        </li>
+                        ))}
+                    </ul>
+                )}
             </div>
-            
-
-            <div className=' d-flex flex-column '>
-                <div className=' d-flex gap-2 justify-content-between'>
-                    <div className=' d-flex flex-column align-items-center justify-content-center'>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>9</p>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>Sunday</p>
-                    </div>
-                    <div className=' d-flex flex-column align-items-center justify-content-center'>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>10</p>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>Monday</p>
-                    </div>
-                    <div className=' d-flex flex-column align-items-center justify-content-center'>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>11</p>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>Tuesday</p>
-                    </div>
-                    <div className=' d-flex flex-column align-items-center justify-content-center'>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>12</p>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>Wednesday</p>
-                    </div>
-                    <div className=' d-flex flex-column align-items-center justify-content-center'>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>13</p>
-                        <p className=' m-0 fw-medium' style={{ fontSize : '12px'}}>Thursday</p>
-                    </div>
+            <div className='flex gap-5 font-semibold items-start text-sm h-6 text-center'>
+                <div className='flex gap-1'>
+                    <button  className="bg-violet-100 text-white w-6 h-6 rounded-l p-1 flex items-center justify-center">
+                        <img src={leftArrow} alt="Previous" className="w-2 h-2 " />
+                    </button>
+                    <button  className="bg-violet-100 h-6 px-3 text-violet-500 flex items-center">
+                        <h6 className="">
+                            from  - to
+                        </h6>
+                    </button>
+                                
+                    <button  className="bg-violet-100 w-6 h-6  text-violet-600 rounded-r p-1 flex items-center justify-center">
+                        <img src={rightArrow} alt="Next" className="w-2 h-2" />
+                    </button>
                 </div>
+
+                <button
+                    onClick={handleShowAddTaskModal}
+                    className="bg-violet-100 text-violet-600 rounded w-40 h-6"
+                    >
+                    Add New Task
+                </button>
+                <button
+                    onClick={handleShowMemberModal}
+                    className="bg-violet-100 text-violet-600 rounded w-40 h-6"
+                >
+                    Add New Member
+                </button>
             </div>
+    </div>
 
-            <div className=' d-flex  align-items-center align-items-stretch  '>
-                <div className='d-flex flex-column border border-1 p-3 gap-5' style={{boxSizing: 'border-box'}}>
-                    <Button onClick={handleShowModal}  variant="outline-primary">Add new member</Button>{' '}
+    <div className="flex-col">
+        
 
-                    {
-                        selectedProject && selectedProject.members && selectedProject.members.length >0 
-                        && selectedProject.members.map((member,index)=>(
-                            <div key={index}   className=' d-flex flex-column justify-content-center align-items-center'>
-                            <img className=' border border-1 rounded-5 p-1' src={defaultAvt} alt="" style={{maxHeight:'30px',maxWidth:'30px'}} />
-                            <p className=' fw-medium' style={{ fontSize : '10px'}}>{member.name}</p>
-                            </div>
-                        ))
-                    }
-                 
+        <div className="flex flex-col w-full">
+            <div className='flex '>
+                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
+                    style={{width: '12.5%'}}
+                    >Search</div>
+                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
+                    style={{width: '12.5%'}}
+                    >Mon</div>
+                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
+                    style={{width: '12.5%'}}
+                    >Tue</div>
+                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
+                    style={{width: '12.5%'}}
+                    >Wed</div><div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
+                style={{width: '12.5%'}}
+                >Thu</div>
+                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
+                    style={{width: '12.5%'}}
+                    >Fri</div>
+                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
+                    style={{width: '12.5%'}}
+                    >Sat</div>
+                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
+                    style={{width: '12.5%'}}
+                >Sun</div>
+            </div>
+        <div className='flex '>
+            <div className="border border-violet-100 flex-col w-full "
+            >
+                {projectMembers?.map((member, memberIndex) => (
                     
-
-                </div>
-
-                <div className=' d-flex flex-column align-items-start justify-content-start gap-5 px-3 py-3'>
-                {
-                    tasksProject!=null && tasksProject.length > 0 && tasksProject.map((task,index)=>(
-                        <div onClick={()=>handleShowEditTaskModal(task)} key={index} className='m-0 d-flex gap-5'>
+                    <div key={memberIndex} className=" border border-violet-100 flex items-center justify-start"
+                        style={{height:'75px'}}>
+                        <div className='flex gap-2  items-center h-full border  '
+                            style={{width:'12.5%'}}>
+                            <img
+                                className="rounded-full border w-10 h-10"
+                                src={defaultAvt}
+                                alt="Avatar"
+                            />
+                            <p className="text-sm font-normal">{member.name}</p>
+                        </div>
                         
-                            <div className={`col d-flex justify-content-center align-items-center gap-3 p-2 rounded-5 ${
-                                                task.status === 'COMPLETED' ? 'bg-success' : 'bg-danger'
-                                            }`}>
-
-                                <div className='d-flex flex-column rounded-5 px-3 py-1 bg-white'>
-                                    <p className='m-0 fw-medium' style={{fontSize : '10px'}}>{task.name}</p>
-                                    <p className='m-0 fw-medium'  style={{fontSize : '10px'}}>from {formatDateDisplay(task.startDate)} to {formatDateDisplay(task.endDate)}</p>
+                        {member?.projectTasks
+                            ?.map((task, taskIndex) => (
+                                <div
+                                    key={taskIndex}
+                                    onClick={() => handleShowEditTaskModal(task)}
+                                    className='flex cursor-pointer border border-violet-100'
+                                    style={{ height: '75px' }}
+                                >
+                                    <div className='bg-violet-600 m-2 p-3 rounded-lg'>
+                                        <div className="flex gap-2">
+                                            <div className='flex-col items-start'>
+                                                <p className="text-xs font-semibold">
+                                                    {`${formatDateDisplay(task.startDate)} - ${formatDateDisplay(task.endDate)}`}
+                                                </p>
+                                                <p className="text-xs font-thin">{task.name}</p>
+                                            </div>
+                                            <div className="flex justify-end items-center gap-1">
+                                                <img
+                                                    className="w-6 h-6 rounded-full border"
+                                                    src={defaultAvt}
+                                                    alt="Avatar"
+                                                />
+                                                <img
+                                                    className="w-6 h-6 rounded-full border"
+                                                    src={defaultAvt}
+                                                    alt="Avatar"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <div className='d-flex rounded-5 p-1 bg-white gap-1'>
-                                    <img className=' border border-1 rounded-5 p-1' src={defaultAvt} alt="" style={{maxHeight:'25px',maxWidth:'25px'}} />
-                                    <img className=' border border-1 rounded-5 p-1' src={defaultAvt} alt="" style={{maxHeight:'25px',maxWidth:'25px'}} />
-
-                                </div>
-
-                            </div>
-                            
-                         </div>           
-                    ))
-                }
+                            ))}
+                        
+                        
+                        
+                    </div>
                     
-                    
-                  
-
-                </div>
+                ))}
             </div>
             
-            <Modal show={showModal} onHide={handleCloseModal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Add Member</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group controlId="formBasicEmail">
-                            <Form.Label>Email address</Form.Label>
-                            <Form.Control
-                                type="email"
-                                placeholder="Enter email"
-                                value={memberEmail}
-                                onChange={(e) => setMemberEmail(e.target.value)}
-                            />
-                        </Form.Group>
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseModal}>
-                        Close
-                    </Button>
-                    <Button variant="primary" onClick={handleAddMember}>
-                        Add Member
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-            
-            
-            <Modal show={showEditTaskModal} onHide={handleCloseEditTaskModal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Edit Task</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                        <Form.Group controlId="formTaskName">
-                            <Form.Label>Task Name</Form.Label>
-                            <Form.Control
-                                type="text"
-                                value={currentTask ? currentTask.name : ''}
-                                onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formStartDate">
-                            <Form.Label>From</Form.Label>
-                            <Form.Control
-                                type="datetime-local"
-                                value={currentTask ? currentTask.startDate : ''}
-                                onChange={(e) => setCurrentTask({ ...currentTask, startDate: e.target.value })}
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formEndDate">
-                            <Form.Label>To</Form.Label>
-                            <Form.Control
-                                type="datetime-local"
-                                value={currentTask ? currentTask.endDate : ''}
-                                onChange={(e) => setCurrentTask({ ...currentTask, endDate: e.target.value })}
-                            />
-                        </Form.Group>
-                        {/* Add more form fields if needed */}
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseEditTaskModal}>
-                        Close
-                    </Button>
-                    <Button variant="primary" onClick={handleSaveTask}>
-                        Save
-                    </Button>
-                    <Button variant="success" onClick={handleMarkTaskAsDone}>
-                        Done Task
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
-            <Modal show={showAddTaskModal} onHide={handleCloseAddTaskModal}>
-                <Modal.Header closeButton>
-                    <Modal.Title>New Task</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form>
-                    <Form.Group controlId="formTaskName">
-                        <Form.Label>Name</Form.Label>
-                        <Form.Control
-                        type="text"
-                        placeholder="Enter task name"
-                        name="name"
-                        value={formAddTaskData.name}
-                        onChange={handleChange}
-                        />
-                    </Form.Group>
-
-                    
-                    <Form.Group controlId="formTaskStartDate">
-                        <Form.Label>Start Date</Form.Label>
-                        <Form.Control
-                        type="datetime-local"
-                        name="startDate"
-                        value={formAddTaskData.startDate}
-                        onChange={handleChange}
-                        />
-                    </Form.Group>
-
-                    <Form.Group controlId="formTaskEndDate">
-                        <Form.Label>End Date</Form.Label>
-                        <Form.Control
-                        type="datetime-local"
-                        name="endDate"
-                        value={formAddTaskData.endDate}
-                        onChange={handleChange}
-                        />
-                    </Form.Group>
-
-                    <Form.Group controlId="formTaskDescription">
-                        <Form.Label>Description</Form.Label>
-                        <Form.Control
-                        as="textarea"
-                        rows={3}
-                        name="description"
-                        value={formAddTaskData.description}
-                        onChange={handleChange}
-                        />
-                    </Form.Group>
-
-                    {error && <p className="text-danger">{error}</p>}
-                    </Form>
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseAddTaskModal}>
-                    Close
-                    </Button>
-                    <Button variant="success" onClick={handleSaveNewTask} >
-                    Save
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-
+            </div>
         </div>
-    )
+        
+      </div>
 
-})
-Projects.propTypes = {
-    task : PropTypes.shape(
-        {
-            id: PropTypes.number,
+      {showEditTaskModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Edit Task</h2>
+            <input
+              type="text"
+              value={currentTask.name}
+              onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
+              className="w-full px-4 py-2 border rounded mb-4"
+            />
+            <div className="flex justify-end">
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+                onClick={handleCloseEditTaskModal}
+              >
+                Close
+              </button>
+              <button
+                className="bg-green-500 text-white px-4 py-2 rounded"
+                onClick={handleMarkTaskAsDone}
+              >
+                Mark as Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-        }
-
-    )
+      {showAddTaskModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Add Task</h2>
+            <input
+              type="text"
+              name="name"
+              placeholder="Enter task name"
+              value={formAddTaskData.name}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded mb-4"
+            />
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <input
+                type="datetime-local"
+                name="startDate"
+                value={formAddTaskData.startDate}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded"
+              />
+              <input
+                type="datetime-local"
+                name="endDate"
+                value={formAddTaskData.endDate}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded"
+              />
+            </div>
+            <textarea
+              name="description"
+              placeholder="Enter description"
+              value={formAddTaskData.description}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border rounded mb-4"
+            />
+            <div className="flex justify-end">
+              <button
+                className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
+                onClick={handleCloseAddTaskModal}
+              >
+                Close
+              </button>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+                onClick={handleSaveNewTask}
+              >
+                Save Task
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
-export default Projects;
+
+Projects.propTypes = {
+  memberEmail: PropTypes.string,
+  setMemberEmail: PropTypes.func,
+}
+
+export default Projects

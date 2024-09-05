@@ -185,9 +185,8 @@ const Daily = () => {
                         </button>
                         <button onClick={handleFromToButtonClick} className="bg-violet-100 h-6 px-3 text-violet-500 flex items-center">
                             <h6 className="text-sm">
-                            {dailyTasks.length > 0 && dailyTasks[0].length > 0 
-                                ? `${formatDateStr(from)} - ${formatDateStr(to)}` 
-                                : ''
+                            {
+                                `${formatDateStr(from)} - ${formatDateStr(to)}` 
                             }
                             </h6>
                         </button>
@@ -216,7 +215,7 @@ const Daily = () => {
                                     className="block w-full border rounded"
                                     />
                                 </label>
-                                <button onClick={handleGetClick} className='bg-violet-100 text-sm text-violet-600 rounded-md text-sm p-1 mt-1 text-center ' style={{width:'100%'}}>
+                                <button onClick={handleGetClick} className='bg-violet-100 text-violet-600 rounded-md text-sm p-1 mt-1 text-center ' style={{width:'100%'}}>
                                     Get
                                 </button>
                             </div>
