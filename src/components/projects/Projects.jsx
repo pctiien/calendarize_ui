@@ -15,6 +15,11 @@ const Projects = () => {
     const [showProjectModal, setShowProjectModal] = useState(false)
     const [showMemberModal,setShowMemberModal] = useState(false)
     const [projectMembers,setProjectMembers] = useState([])
+    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const getDayOfWeek = (date) => {
+        const taskDate = new Date(date);
+        return taskDate.getDay(); // Trả về số từ 0 đến 6 (0 là Chủ nhật, 6 là Thứ 7)
+      };
   const [formAddTaskData, setFormAddTaskData] = useState({
     name: '',
     startDate: '',
@@ -132,9 +137,7 @@ const Projects = () => {
                 }
             })
             if(response && response.data){
-                console.log('tasks',response.data)
                 setProjectMembers(response.data.members)
-                console.log('members',projectMembers)
             }
         }
     }catch(e)
@@ -172,11 +175,22 @@ const Projects = () => {
     }
     fetchProjects()
   }, [])
-  useEffect(() => {
-        if (selectedProject) {
-            fetchProjectTasks(selectedProject);
-        }
+    useEffect(() => {
+            if (selectedProject) {
+                fetchProjectTasks(selectedProject);
+            }
     }, [selectedProject]);
+
+    function getStartOfWeek(date = new Date()) {
+        const dayOfWeek = date.getDay(); // 0 là Chủ Nhật, 1 là Thứ Hai, ..., 6 là Thứ Bảy
+        const distanceToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
+        const startOfWeek = new Date(date); // Tạo một bản sao của ngày hiện tại
+        startOfWeek.setHours(0, 0, 0, 0); // Đặt thời gian về 00:00:00
+        startOfWeek.setDate(date.getDate() + distanceToMonday); // Điều chỉnh để có thứ Hai
+        return startOfWeek;
+    }
+    
+    
   return (
     <div className=" mx-10 ml-20 ">
         <div className="mb-5">
@@ -280,17 +294,34 @@ const Projects = () => {
                             <p className="text-sm font-normal">{member.name}</p>
                         </div>
                         
-                        {member?.projectTasks
-                            ?.map((task, taskIndex) => (
+                        {member?.projectTasks?.map((task, taskIndex) => {
+
+                            const taskStartDate = new Date(task.startDate);
+
+                            const taskEndDate = new Date(task.endDate);
+                            const startOfWeek = getStartOfWeek(taskStartDate); 
+
+                            const dayOffset = parseInt((taskStartDate - startOfWeek) / (1000 * 60 * 60 * 24));
+                            const taskDuration = parseInt((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24))+1;
+
+                            const adjustedDayOffset = Math.max(0, Math.min(dayOffset, 6));
+                            const adjustedTaskDuration = Math.max(1, Math.min(taskDuration, 7 - adjustedDayOffset));
+                            
+                            console.log('adjustedDay', adjustedDayOffset,adjustedTaskDuration);
+
+                            return (
                                 <div
                                     key={taskIndex}
                                     onClick={() => handleShowEditTaskModal(task)}
-                                    className='flex cursor-pointer border border-violet-100'
-                                    style={{ height: '75px' }}
+                                    className="flex cursor-pointer border border-violet-100"
+                                    style={{
+                                        height: '75px',
+                                        width: `${12.5 * adjustedTaskDuration}%`,
+                                    }}
                                 >
-                                    <div className='bg-violet-600 m-2 p-3 rounded-lg'>
+                                    <div className="bg-violet-600 m-2 p-3 rounded-lg">
                                         <div className="flex gap-2">
-                                            <div className='flex-col items-start'>
+                                            <div className="flex-col items-start">
                                                 <p className="text-xs font-semibold">
                                                     {`${formatDateDisplay(task.startDate)} - ${formatDateDisplay(task.endDate)}`}
                                                 </p>
@@ -311,7 +342,9 @@ const Projects = () => {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                            );
+                        })}
+
                         
                         
                         
