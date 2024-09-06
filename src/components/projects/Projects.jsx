@@ -8,13 +8,56 @@ const Projects = () => {
     const [error, setError] = useState(null)
     const [projects, setProjects] = useState([])
     const [selectedProject, setSelectedProject] = useState(null)
-    const [tasksProject, setTasksProject] = useState([])
     const [showEditTaskModal, setShowEditTaskModal] = useState(false)
     const [currentTask, setCurrentTask] = useState(null)
     const [showAddTaskModal, setShowAddTaskModal] = useState(false)
     const [showProjectModal, setShowProjectModal] = useState(false)
     const [showMemberModal,setShowMemberModal] = useState(false)
     const [projectMembers,setProjectMembers] = useState([])
+    const [getClick,setGetClick] = useState(false);
+    const [from, setFrom] = useState(() => {
+      const today = new Date();
+      const sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 7);
+      return sevenDaysAgo;
+    });
+  
+    const [to, setTo] = useState(() => {
+        const today = new Date();
+        return today;
+    });
+  
+
+    // Tạo mảng các ngày
+    const getDateArray = (from,to)=>{
+      const startDate = new Date(from);
+      const endDate = new Date(to);
+      const dateArray = [];
+      let currentDate = startDate;
+      while (currentDate <= endDate) {
+        dateArray.push(new Date(currentDate));
+        currentDate.setDate(currentDate.getDate() + 1); // Tăng thêm 1 ngày
+      }
+      return dateArray;
+    }
+    
+
+    const handleNextClick = ()=>{
+      const nextDay = new Date(to)
+      nextDay.setDate(nextDay.getDate()+1)
+      setTo(nextDay)
+      setGetClick(!getClick)
+    }
+    const handleBackClick = () =>{
+        const backDate = new Date(from)
+        backDate.setDate(backDate.getDate()-1)
+        setFrom(backDate)
+        setGetClick(!getClick)
+    }
+    const handleGetClick = ()=>{
+      setGetClick(!getClick)
+      setShowForm(false);
+    }
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const getDayOfWeek = (date) => {
         const taskDate = new Date(date);
@@ -27,7 +70,27 @@ const Projects = () => {
     description: '',
     projectId: '',
   })
-
+  const formatDate = (date) => {
+    // Đảm bảo date là đối tượng Date
+    const validDate = new Date(date);
+    if (isNaN(validDate.getTime())) {
+      return ''; // Trả về chuỗi trống nếu date không hợp lệ
+    }
+    const year = validDate.getFullYear();
+    const month = String(validDate.getMonth() + 1).padStart(2, '0');
+    const day = String(validDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const formatDateStr = (date) => {
+      const validDate = new Date(date);
+      if (isNaN(validDate.getTime())) {
+        return ''; // Trả về chuỗi trống nếu date không hợp lệ
+      }
+      const year = validDate.getFullYear();
+      const month = String(validDate.getMonth() + 1).padStart(2, '0');
+      const day = String(validDate.getDate()).padStart(2, '0');
+      return `${day}-${month}-${year}`;
+  };
   const formatDateDisplay = (date) => {
     const localDate = new Date(date)
     const year = localDate.getFullYear()
@@ -49,6 +112,7 @@ const Projects = () => {
 
   const handleSaveNewTask = async () => {
     if (!formAddTaskData) return
+
     formAddTaskData.projectId = selectedProject ? selectedProject.id : ''
 
     const _startDate = new Date(formAddTaskData.startDate)
@@ -68,7 +132,6 @@ const Projects = () => {
       if (response && response.data) {
         console.log('Task added:', response.data)
       }
-      setTasksProject(selectedProject.projectTasks)
       handleCloseAddTaskModal()
     } catch (e) {
       setError(e.message)
@@ -110,7 +173,24 @@ const Projects = () => {
     }
     handleCloseEditTaskModal()
   }
-
+  const handleDeleteTask = async()=>{
+    try {
+      const response = await projectApiInstance.delete(`tasks/${currentTask.id}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      if(response.statusCode === 200)
+      {
+        console.log('success')
+      }
+      handleCloseProjectModal()
+    } catch (e) {
+      setError(e.message)
+    }
+  }
   const handleAddMember = async () => {
     try {
       const response = await projectApiInstance.post(
@@ -133,10 +213,13 @@ const Projects = () => {
         {
             const response = await projectApiInstance.get('',{
                 params:{
-                    projectId: project?.id
+                    projectId: project?.id,
+                    from: formatDate(from),
+                    to: formatDate(to) 
                 }
             })
             if(response && response.data){
+                console.log('kaka',response.data)
                 setProjectMembers(response.data.members)
             }
         }
@@ -175,20 +258,14 @@ const Projects = () => {
     }
     fetchProjects()
   }, [])
-    useEffect(() => {
-            if (selectedProject) {
-                fetchProjectTasks(selectedProject);
-            }
-    }, [selectedProject]);
 
-    function getStartOfWeek(date = new Date()) {
-        const dayOfWeek = date.getDay(); // 0 là Chủ Nhật, 1 là Thứ Hai, ..., 6 là Thứ Bảy
-        const distanceToMonday = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek;
-        const startOfWeek = new Date(date); // Tạo một bản sao của ngày hiện tại
-        startOfWeek.setHours(0, 0, 0, 0); // Đặt thời gian về 00:00:00
-        startOfWeek.setDate(date.getDate() + distanceToMonday); // Điều chỉnh để có thứ Hai
-        return startOfWeek;
+  useEffect(() => {
+    if (selectedProject) {
+      fetchProjectTasks(selectedProject);
     }
+  }, [selectedProject,from,to]);
+
+
     
     
   return (
@@ -219,16 +296,18 @@ const Projects = () => {
             </div>
             <div className='flex gap-5 font-semibold items-start text-sm h-6 text-center'>
                 <div className='flex gap-1'>
-                    <button  className="bg-violet-100 text-white w-6 h-6 rounded-l p-1 flex items-center justify-center">
+                    <button onClick={handleBackClick}  className="bg-violet-100 text-white w-6 h-6 rounded-l p-1 flex items-center justify-center">
                         <img src={leftArrow} alt="Previous" className="w-2 h-2 " />
                     </button>
                     <button  className="bg-violet-100 h-6 px-3 text-violet-500 flex items-center">
                         <h6 className="">
-                            from  - to
+                            {
+                                `${formatDateStr(from)} - ${formatDateStr(to)}` 
+                            }
                         </h6>
                     </button>
                                 
-                    <button  className="bg-violet-100 w-6 h-6  text-violet-600 rounded-r p-1 flex items-center justify-center">
+                    <button onClick={handleNextClick}  className="bg-violet-100 w-6 h-6  text-violet-600 rounded-r p-1 flex items-center justify-center">
                         <img src={rightArrow} alt="Next" className="w-2 h-2" />
                     </button>
                 </div>
@@ -248,102 +327,102 @@ const Projects = () => {
             </div>
     </div>
 
-    <div className="flex-col">
+    <div className="flex-col bg-gray-100">
         
 
         <div className="flex flex-col w-full">
-            <div className='flex '>
-                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
-                    style={{width: '12.5%'}}
-                    >Search</div>
-                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
-                    style={{width: '12.5%'}}
-                    >Mon</div>
-                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
-                    style={{width: '12.5%'}}
-                    >Tue</div>
-                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
-                    style={{width: '12.5%'}}
-                    >Wed</div><div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
-                style={{width: '12.5%'}}
-                >Thu</div>
-                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
-                    style={{width: '12.5%'}}
-                    >Fri</div>
-                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
-                    style={{width: '12.5%'}}
-                    >Sat</div>
-                <div className='p-4 border-violet-100 border text-center text-sm font-semibold text-violet-500'
-                    style={{width: '12.5%'}}
-                >Sun</div>
+            <div className='flex bg-white '>
+              
+                <div className='  text-center text-sm font-semibold '
+                style={{width: '5%'}}
+                    >{from.getFullYear()}</div>
+                {
+                  getDateArray(from,to).map((date,index)=>{
+
+                    const dateCount = parseInt((to - from) / (1000 * 60 * 60 * 24))+1; // 95 /dateCount 
+                    const widthPercent = 95/dateCount;
+                    return (
+                      <div key={index} className='text-center text-sm font-semibold'
+                        style={{width: `${widthPercent}%`}}
+                      >
+                        {date.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' })}
+                      </div>
+                    )
+                  })
+                }
             </div>
         <div className='flex '>
-            <div className="border border-violet-100 flex-col w-full "
+            <div className=" flex-col w-full "
             >
                 {projectMembers?.map((member, memberIndex) => (
                     
-                    <div key={memberIndex} className=" border border-violet-100 flex items-center justify-start"
-                        style={{height:'75px'}}>
-                        <div className='flex gap-2  items-center h-full border  '
-                            style={{width:'12.5%'}}>
+                    <div key={memberIndex} className=" flex items-center"
+                        >
+                        <div className='flex flex-col items-center justify-center text-center gap-2 bg-white'
+                            style={{width:'5%',height: '75px'}}>
                             <img
-                                className="rounded-full border w-10 h-10"
+                                className="rounded-full border w-6 h-6"
                                 src={defaultAvt}
                                 alt="Avatar"
                             />
-                            <p className="text-sm font-normal">{member.name}</p>
+                            <p className="text-xs font-normal">{member.name}</p>
                         </div>
                         
-                        {member?.projectTasks?.map((task, taskIndex) => {
+                        {member?.projectTasks?.reduce((acc, task, taskIndex) => {
+                          const taskStartDate = new Date(task.startDate);
+                          const taskEndDate = new Date(task.endDate);
 
-                            const taskStartDate = new Date(task.startDate);
+                          const dayOffset = parseInt((taskStartDate - from) / (1000 * 60 * 60 * 24))+1;
+                          const taskDuration = parseInt((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24)) + 1;
 
-                            const taskEndDate = new Date(task.endDate);
-                            const startOfWeek = getStartOfWeek(taskStartDate); 
+                          const remainDuration = parseInt(Math.max(0,taskEndDate - to)/ (1000 * 60 * 60 * 24))
 
-                            const dayOffset = parseInt((taskStartDate - startOfWeek) / (1000 * 60 * 60 * 24));
-                            const taskDuration = parseInt((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24))+1;
+                          const dateCount = parseInt((to - from) / (1000 * 60 * 60 * 24)) + 1;
+                          const widthPercent = 95 / dateCount;
 
-                            const adjustedDayOffset = Math.max(0, Math.min(dayOffset, 6));
-                            const adjustedTaskDuration = Math.max(1, Math.min(taskDuration, 7 - adjustedDayOffset));
-                            
-                            console.log('adjustedDay', adjustedDayOffset,adjustedTaskDuration);
+                          const adjustedDayOffset = Math.max(0, dayOffset);
+                          const adjustedTaskDuration = Math.max(1, taskDuration-remainDuration);
 
-                            return (
-                                <div
-                                    key={taskIndex}
-                                    onClick={() => handleShowEditTaskModal(task)}
-                                    className="flex cursor-pointer border border-violet-100"
-                                    style={{
-                                        height: '75px',
-                                        width: `${12.5 * adjustedTaskDuration}%`,
-                                    }}
-                                >
-                                    <div className="bg-violet-600 m-2 p-3 rounded-lg">
-                                        <div className="flex gap-2">
-                                            <div className="flex-col items-start">
-                                                <p className="text-xs font-semibold">
-                                                    {`${formatDateDisplay(task.startDate)} - ${formatDateDisplay(task.endDate)}`}
-                                                </p>
-                                                <p className="text-xs font-thin">{task.name}</p>
-                                            </div>
-                                            <div className="flex justify-end items-center gap-1">
-                                                <img
-                                                    className="w-6 h-6 rounded-full border"
-                                                    src={defaultAvt}
-                                                    alt="Avatar"
-                                                />
-                                                <img
-                                                    className="w-6 h-6 rounded-full border"
-                                                    src={defaultAvt}
-                                                    alt="Avatar"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                          let marginLeft = 0;
+                          if (taskIndex === 0) {
+                              // Task đầu tiên, chỉ tính marginLeft theo dayOffset
+                              marginLeft = widthPercent * adjustedDayOffset;
+                          } else {
+                              // Task tiếp theo, tính toán khoảng cách giữa task hiện tại và task trước đó
+                              const prevTask = acc[taskIndex - 1];
+                              const prevTaskEndDate = new Date(prevTask.endDate);
+                              const prevDayOffset = parseInt((prevTaskEndDate - from) / (1000 * 60 * 60 * 24)) + 1;
+
+                              const gapBetweenTasks = dayOffset - prevDayOffset; // Khoảng cách giữa task trước và task hiện tại
+                              marginLeft = widthPercent * Math.max(0, gapBetweenTasks); // Tính toán marginLeft dựa trên khoảng cách
+                          }
+
+                          acc.push(
+                              <div
+                                  key={taskIndex}
+                                  onClick={() => handleShowEditTaskModal(task)}
+                                  className="cursor-pointer "
+                                  style={{
+                                      width: `${widthPercent * adjustedTaskDuration}%`,
+                                      marginLeft: `${marginLeft}%`
+                                  }}
+                              >
+                                  <div className="bg-violet-400 m-2 p-3">
+                                      <div className="flex gap-2">
+                                          <div className="flex-col items-start">
+                                              <p className="text-xs font-semibold">
+                                                  {`${formatDateDisplay(task.startDate)} - ${formatDateDisplay(task.endDate)}`}
+                                              </p>
+                                              <p className="text-xs font-thin">{task.name}</p>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          );
+                          
+                          return acc;
+                      }, [])}
+
 
                         
                         
@@ -368,19 +447,40 @@ const Projects = () => {
               onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
               className="w-full px-4 py-2 border rounded mb-4"
             />
-            <div className="flex justify-end">
+            <div className='flex'>
+              <input
+                type="datetime-local"
+                value={currentTask.startDate}
+                onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
+                className="w-full px-4 py-2 border rounded mb-4"
+              />
+              <input
+                type="datetime-local"
+                value={currentTask.endDate}
+                onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
+                className="w-full px-4 py-2 border rounded mb-4"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                  className="bg-green-500 text-white px-4 py-2 rounded"
+                  onClick={handleMarkTaskAsDone}
+                >
+                  Mark as Done
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={handleDeleteTask}
+              >
+                Delete
+              </button>
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded mr-2"
                 onClick={handleCloseEditTaskModal}
               >
                 Close
               </button>
-              <button
-                className="bg-green-500 text-white px-4 py-2 rounded"
-                onClick={handleMarkTaskAsDone}
-              >
-                Mark as Done
-              </button>
+              
             </div>
           </div>
         </div>
