@@ -12,7 +12,6 @@ const Projects = () => {
     const [currentTask, setCurrentTask] = useState(null)
     const [showAddTaskModal, setShowAddTaskModal] = useState(false)
     const [showProjectModal, setShowProjectModal] = useState(false)
-    const [showMemberModal,setShowMemberModal] = useState(false)
     const [projectMembers,setProjectMembers] = useState([])
     const [getClick,setGetClick] = useState(false);
     const [from, setFrom] = useState(() => {
@@ -157,7 +156,7 @@ const Projects = () => {
 
   const handleMarkTaskAsDone = async () => {
     if (!currentTask) return
-
+    currentTask.status = "COMPLETED"
     try {
       const response = await projectApiInstance.put(`/tasks/${currentTask.id}`, {
         headers: {
@@ -165,7 +164,6 @@ const Projects = () => {
         },
       })
       if (response && response.data) {
-        console.log(response.data)
         setProjectMembers(response.data.members)
       }
     } catch (e) {
@@ -182,11 +180,30 @@ const Projects = () => {
           },
         }
       )
-      if(response.statusCode === 200)
+      if(response.status === 200)
       {
         console.log('success')
       }
       handleCloseProjectModal()
+    } catch (e) {
+      setError(e.message)
+    }
+  }
+  const handleSaveTask = async()=>{
+    try {
+      const response = await projectApiInstance.put('tasks',currentTask,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      if(response && response.status === 200)
+      {
+        console.log('success')
+        fetchProjectTasks(selectedProject);
+      }
+      handleCloseEditTaskModal()
     } catch (e) {
       setError(e.message)
     }
@@ -219,7 +236,7 @@ const Projects = () => {
                 }
             })
             if(response && response.data){
-                console.log('kaka',response.data)
+                console.log(response.data)
                 setProjectMembers(response.data.members)
             }
         }
@@ -257,13 +274,13 @@ const Projects = () => {
       }
     }
     fetchProjects()
-  }, [])
+  }, [currentTask])
 
   useEffect(() => {
     if (selectedProject) {
       fetchProjectTasks(selectedProject);
     }
-  }, [selectedProject,from,to]);
+  }, [selectedProject,from,to,currentTask]);
 
 
     
@@ -372,56 +389,64 @@ const Projects = () => {
                           const taskStartDate = new Date(task.startDate);
                           const taskEndDate = new Date(task.endDate);
 
-                          const dayOffset = parseInt((taskStartDate - from) / (1000 * 60 * 60 * 24))+1;
+                          const dayOffset = parseInt((taskStartDate - from) / (1000 * 60 * 60 * 24));
                           const taskDuration = parseInt((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24)) + 1;
 
-                          const remainDuration = parseInt(Math.max(0,taskEndDate - to)/ (1000 * 60 * 60 * 24))
-
+                          let remainDuration = parseInt(Math.max(0, taskEndDate - to) / (1000 * 60 * 60 * 24));
+                          if(remainDuration>0) remainDuration = remainDuration 
                           const dateCount = parseInt((to - from) / (1000 * 60 * 60 * 24)) + 1;
                           const widthPercent = 95 / dateCount;
 
                           const adjustedDayOffset = Math.max(0, dayOffset);
-                          const adjustedTaskDuration = Math.max(1, taskDuration-remainDuration);
+                          const adjustedTaskDuration = Math.max(1, taskDuration - remainDuration);
 
                           let marginLeft = 0;
                           if (taskIndex === 0) {
-                              // Task đầu tiên, chỉ tính marginLeft theo dayOffset
-                              marginLeft = widthPercent * adjustedDayOffset;
+                            marginLeft = widthPercent * adjustedDayOffset;
                           } else {
-                              // Task tiếp theo, tính toán khoảng cách giữa task hiện tại và task trước đó
-                              const prevTask = acc[taskIndex - 1];
+                            // Truy cập task trước đó từ acc, lưu trữ thông tin task thay vì chỉ JSX
+                            const prevTask = acc[taskIndex - 1]?.taskInfo;
+                            if (prevTask) {
                               const prevTaskEndDate = new Date(prevTask.endDate);
                               const prevDayOffset = parseInt((prevTaskEndDate - from) / (1000 * 60 * 60 * 24)) + 1;
 
-                              const gapBetweenTasks = dayOffset - prevDayOffset; // Khoảng cách giữa task trước và task hiện tại
-                              marginLeft = widthPercent * Math.max(0, gapBetweenTasks); // Tính toán marginLeft dựa trên khoảng cách
+                              const gapBetweenTasks = dayOffset - prevDayOffset;
+                              marginLeft = widthPercent * Math.max(0, gapBetweenTasks);
+                            }
                           }
-
-                          acc.push(
+                          let statusMap = new Map()
+                          statusMap.set("PENDING","bg-yellow-200")
+                          statusMap.set("COMPLETED","bg-green-200")
+                          statusMap.set("OVERDUE","bg-red-200")
+                          acc.push({
+                            taskInfo: task, // Lưu trữ thông tin task hiện tại
+                            jsx: (
                               <div
-                                  key={taskIndex}
-                                  onClick={() => handleShowEditTaskModal(task)}
-                                  className="cursor-pointer "
-                                  style={{
-                                      width: `${widthPercent * adjustedTaskDuration}%`,
-                                      marginLeft: `${marginLeft}%`
-                                  }}
+                                key={taskIndex}
+                                onClick={() => handleShowEditTaskModal(task)}
+                                className="cursor-pointer"
+                                style={{
+                                  width: `${widthPercent * adjustedTaskDuration}%`,
+                                  marginLeft: `${marginLeft}%`
+                                }}
                               >
-                                  <div className="bg-violet-400 m-2 p-3">
-                                      <div className="flex gap-2">
-                                          <div className="flex-col items-start">
-                                              <p className="text-xs font-semibold">
-                                                  {`${formatDateDisplay(task.startDate)} - ${formatDateDisplay(task.endDate)}`}
-                                              </p>
-                                              <p className="text-xs font-thin">{task.name}</p>
-                                          </div>
-                                      </div>
+                                <div className={`${statusMap.get(task.status)} m-2 p-3`}>
+                                  <div className="flex gap-2">
+                                    <div className="flex-col items-start">
+                                      <p className="text-xs font-semibold">
+                                        {`${formatDateDisplay(task.startDate)} - ${formatDateDisplay(task.endDate)}`}
+                                      </p>
+                                      <p className="text-xs font-thin">{task.name}</p>
+                                    </div>
                                   </div>
+                                </div>
                               </div>
-                          );
-                          
+                            )
+                          });
+
                           return acc;
-                      }, [])}
+                        }, []).map(item => item.jsx)} 
+
 
 
                         
@@ -460,8 +485,20 @@ const Projects = () => {
                 onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
                 className="w-full px-4 py-2 border rounded mb-4"
               />
+              <input
+                type="text"
+                value={currentTask.description}
+                onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
+                className="w-full px-4 py-2 border rounded mb-4"
+              />
             </div>
             <div className="flex justify-end gap-2">
+              <button
+                    className="bg-green-500 text-white px-4 py-2 rounded"
+                    onClick={handleSaveTask}
+                  >
+                    Save
+                </button>
               <button
                   className="bg-green-500 text-white px-4 py-2 rounded"
                   onClick={handleMarkTaskAsDone}
