@@ -18,11 +18,13 @@ const Projects = () => {
       const today = new Date();
       const sevenDaysAgo = new Date(today);
       sevenDaysAgo.setDate(today.getDate() - 7);
+      sevenDaysAgo.setHours(0,0,0,0)
       return sevenDaysAgo;
     });
   
     const [to, setTo] = useState(() => {
         const today = new Date();
+        today.setHours(0,0,0,0)
         return today;
     });
   
@@ -374,9 +376,10 @@ const Projects = () => {
                 {projectMembers?.map((member, memberIndex) => (
                     
                     <div key={memberIndex} className=" flex items-center"
+                    style={{height: '60px'}}
                         >
-                        <div className='flex flex-col items-center justify-center text-center gap-2 bg-white'
-                            style={{width:'5%',height: '75px'}}>
+                        <div className='flex flex-col items-center h-full justify-center text-center bg-white'
+                            style={{width:'5%'}}>
                             <img
                                 className="rounded-full border w-6 h-6"
                                 src={defaultAvt}
@@ -388,32 +391,33 @@ const Projects = () => {
                         {member?.projectTasks?.reduce((acc, task, taskIndex) => {
                           const taskStartDate = new Date(task.startDate);
                           const taskEndDate = new Date(task.endDate);
-
-                          const dayOffset = parseInt((taskStartDate - from) / (1000 * 60 * 60 * 24));
-                          const taskDuration = parseInt((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24)) + 1;
-
-                          let remainDuration = parseInt(Math.max(0, taskEndDate - to) / (1000 * 60 * 60 * 24));
-                          if(remainDuration>0) remainDuration = remainDuration 
-                          const dateCount = parseInt((to - from) / (1000 * 60 * 60 * 24)) + 1;
+                          taskStartDate.setHours(0,0,0,0)
+                          taskEndDate.setHours(0,0,0,0)
+                          const dayOffset = Math.round((taskStartDate - from) )/ (1000 * 60 * 60 * 24) ;
+                          const taskDuration = Math.round((taskEndDate - taskStartDate) / (1000 * 60 * 60 * 24)) + 1;
+                          const remainDuration = Math.round((to - taskStartDate) / (1000 * 60 * 60 * 24)) + 1
+                          const dateCount = Math.round((to - from) / (1000 * 60 * 60 * 24)) +1;
                           const widthPercent = 95 / dateCount;
 
                           const adjustedDayOffset = Math.max(0, dayOffset);
-                          const adjustedTaskDuration = Math.max(1, taskDuration - remainDuration);
+                          const adjustedTaskDuration = Math.max(1, Math.min(taskDuration,remainDuration));
+                          
 
                           let marginLeft = 0;
                           if (taskIndex === 0) {
                             marginLeft = widthPercent * adjustedDayOffset;
                           } else {
-                            // Truy cập task trước đó từ acc, lưu trữ thông tin task thay vì chỉ JSX
+
                             const prevTask = acc[taskIndex - 1]?.taskInfo;
                             if (prevTask) {
                               const prevTaskEndDate = new Date(prevTask.endDate);
-                              const prevDayOffset = parseInt((prevTaskEndDate - from) / (1000 * 60 * 60 * 24)) + 1;
-
-                              const gapBetweenTasks = dayOffset - prevDayOffset;
+                              prevTaskEndDate.setHours(0,0,0,0)
+                              const prevDayOffset = Math.round((prevTaskEndDate - from) / (1000 * 60 * 60 * 24)) ;
+                              const gapBetweenTasks = dayOffset - prevDayOffset - 1;
                               marginLeft = widthPercent * Math.max(0, gapBetweenTasks);
                             }
                           }
+
                           let statusMap = new Map()
                           statusMap.set("PENDING","bg-yellow-200")
                           statusMap.set("COMPLETED","bg-green-200")
@@ -430,7 +434,7 @@ const Projects = () => {
                                   marginLeft: `${marginLeft}%`
                                 }}
                               >
-                                <div className={`${statusMap.get(task.status)} m-2 p-3`}>
+                                <div className={`${statusMap.get(task.status)} m-1 p-2`}>
                                   <div className="flex gap-2">
                                     <div className="flex-col items-start">
                                       <p className="text-xs font-semibold">
