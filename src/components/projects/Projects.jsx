@@ -14,6 +14,10 @@ const Projects = () => {
     const [showProjectModal, setShowProjectModal] = useState(false)
     const [projectMembers,setProjectMembers] = useState([])
     const [getClick,setGetClick] = useState(false);
+    const [addMemberForm,setAddMemberForm] = useState(false);
+    const [addMemberFormData,setAddMemberFormData] = useState({
+      email : ''
+    });
     const [from, setFrom] = useState(() => {
       const today = new Date();
       const sevenDaysAgo = new Date(today);
@@ -59,11 +63,6 @@ const Projects = () => {
       setGetClick(!getClick)
       setShowForm(false);
     }
-    const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const getDayOfWeek = (date) => {
-        const taskDate = new Date(date);
-        return taskDate.getDay(); // Trả về số từ 0 đến 6 (0 là Chủ nhật, 6 là Thứ 7)
-      };
   const [formAddTaskData, setFormAddTaskData] = useState({
     name: '',
     startDate: '',
@@ -94,14 +93,10 @@ const Projects = () => {
   };
   const formatDateDisplay = (date) => {
     const localDate = new Date(date)
-    const year = localDate.getFullYear()
-    const month = String(localDate.getMonth() + 1).padStart(2, '0')
-    const day = String(localDate.getDate()).padStart(2, '0')
     const hours = String(localDate.getHours()).padStart(2, '0')
     const minutes = String(localDate.getMinutes()).padStart(2, '0')
     return `${hours}:${minutes}`
   }
-  const handleShowMemberModal = ()=> setShowMemberModal(true)
   const handleShowProjectModal = () => setShowProjectModal(!showProjectModal)
   const handleCloseProjectModal = () => setShowProjectModal(false)
   const handleShowAddTaskModal = () => setShowAddTaskModal(true)
@@ -210,17 +205,29 @@ const Projects = () => {
       setError(e.message)
     }
   }
-  const handleAddMember = async () => {
+  const handleAddMember = async (task) => {
     try {
-      const response = await projectApiInstance.post(
-        `/${selectedProject.id}/user/1`,
+      console.log(addMemberFormData.email)
+      console.log('task',task)
+      const response = await projectApiInstance.put(`tasks/${task.id}/user`,null,
         {
+          params :{
+            email: addMemberFormData.email
+          },
           headers: {
             'Content-Type': 'application/json',
           },
         }
       )
-      handleCloseProjectModal()
+      if(response && response.data)
+      {
+        console.log(response)
+        if(response.status == 200)
+        {
+          console.log('success')
+        }
+      }
+      setAddMemberForm(!addMemberForm)
     } catch (e) {
       setError(e.message)
     }
@@ -337,12 +344,7 @@ const Projects = () => {
                     >
                     Add New Task
                 </button>
-                <button
-                    onClick={handleShowMemberModal}
-                    className="bg-violet-100 text-violet-600 rounded w-40 h-6"
-                >
-                    Add New Member
-                </button>
+               
             </div>
     </div>
 
@@ -489,12 +491,48 @@ const Projects = () => {
                 onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
                 className="w-full px-4 py-2 border rounded mb-4"
               />
-              <input
+              
+            </div>
+            <input
                 type="text"
                 value={currentTask.description}
                 onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
                 className="w-full px-4 py-2 border rounded mb-4"
               />
+            <div className='flex gap-2 mb-2 items-center' >
+              <img
+                className="rounded-full border w-8 h-8"
+                src={defaultAvt}
+                alt="Avatar"
+              />
+              <img
+                className="rounded-full border w-8 h-8"
+                src={defaultAvt}
+                alt="Avatar"
+              />
+              <button onClick={()=>setAddMemberForm(!addMemberForm)} className=' text-white rounded-full bg-gray-300 w-8 h-8 text-center flex justify-center items-center'>
+                <p>+</p>
+              </button> 
+              {
+                addMemberForm && (
+                    <div className='flex items-center gap-2'>
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="Enter member's email address"
+                        className="px-4 py-1 border rounded"
+                        onChange={(e) => setAddMemberFormData({ ...addMemberFormData, email: e.target.value })}
+                        value = {addMemberFormData.email}
+                      />
+                      <button onClick={()=>handleAddMember(currentTask)} className='flex items-center justify-center text-sm font-normal bg-green-200 rounded-lg p-1 px-5'>
+                        <p>Add</p> 
+                      </button>
+                    </div>
+
+                  
+                  
+                )
+              }
             </div>
             <div className="flex justify-end gap-2">
               <button
