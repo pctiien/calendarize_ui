@@ -15,9 +15,30 @@ const Projects = () => {
     const [projectMembers,setProjectMembers] = useState([])
     const [getClick,setGetClick] = useState(false);
     const [addMemberForm,setAddMemberForm] = useState(false);
+    const [inputEmail, setInputEmail] = useState(''); 
+    const [membersInTasks, setMembersInTasks] = useState([]);
     const [addMemberFormData,setAddMemberFormData] = useState({
       email : ''
     });
+    const handleEmailChange = (e) => {
+      setInputEmail(e.target.value); // lưu giá trị của email hiện tại
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter' && inputEmail.trim() !== '') {
+        setFormAddTaskData((prevState) => ({
+          ...prevState,
+          emails: [...prevState.emails, inputEmail.trim()]
+        }));
+        setInputEmail(''); 
+        e.preventDefault();
+      }
+    };
+    const handleClickAddMembers = async(e)=>{
+      e.preventDefault()
+      setAddMemberForm(!addMemberForm)
+    
+      
+    }
     const [from, setFrom] = useState(() => {
       const today = new Date();
       const sevenDaysAgo = new Date(today);
@@ -59,16 +80,14 @@ const Projects = () => {
         setFrom(backDate)
         setGetClick(!getClick)
     }
-    const handleGetClick = ()=>{
-      setGetClick(!getClick)
-      setShowForm(false);
-    }
+
   const [formAddTaskData, setFormAddTaskData] = useState({
     name: '',
     startDate: '',
     endDate: '',
     description: '',
     projectId: '',
+    emails: [],
   })
   const formatDate = (date) => {
     // Đảm bảo date là đối tượng Date
@@ -120,13 +139,43 @@ const Projects = () => {
     }
 
     try {
-      const response = await projectApiInstance.post('tasks', formAddTaskData, {
+      const response = await projectApiInstance.post('tasks', {
+        name: formAddTaskData.name,
+        startDate: formAddTaskData.startDate,
+        endDate: formAddTaskData.endDate,
+        description: formAddTaskData.description,
+        projectId: formAddTaskData.projectId,
+      }, 
+      {
         headers: {
           'Content-Type': 'application/json',
         },
       })
+
       if (response && response.data) {
         console.log('Task added:', response.data)
+      
+
+      console.log(formAddTaskData.emails.join(','))
+
+      const assignResponse = await projectApiInstance.post(`tasks/${response.data.id}/users`,null,
+        {
+          params :{
+            emails: formAddTaskData.emails.join(',')
+          },
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      )
+      if(assignResponse && assignResponse.data)
+        {
+          console.log(assignResponse)
+          if(assignResponse.status == 200)
+          {
+            console.log('success')
+          }
+        }
       }
       handleCloseAddTaskModal()
     } catch (e) {
@@ -139,15 +188,29 @@ const Projects = () => {
       endDate: '',
       description: '',
       projectId: '',
+      emails: []
     })
   }
 
-  const handleShowEditTaskModal = (task) => {
+  const handleShowEditTaskModal = async(task) => {
+    try{
+      const response = await projectApiInstance.get(`tasks/${currentTask.id}/users`)
+      if(response && response.data && response.status === 200)
+      {
+        console.log(response.data)
+        setMembersInTasks(response.data)
+      }
+    }catch(e){
+      console.log(e.message);
+    }
     setCurrentTask(task)
     setShowEditTaskModal(true)
   }
 
-  const handleCloseEditTaskModal = () => setShowEditTaskModal(false)
+  const handleCloseEditTaskModal = () =>{
+    setShowEditTaskModal(false)
+    setMembersInTasks([])
+  }
 
 
 
@@ -207,9 +270,8 @@ const Projects = () => {
   }
   const handleAddMember = async (task) => {
     try {
-      console.log(addMemberFormData.email)
       console.log('task',task)
-      const response = await projectApiInstance.put(`tasks/${task.id}/user`,null,
+      const response = await projectApiInstance.post(`tasks/${task.id}/users`,null,
         {
           params :{
             email: addMemberFormData.email
@@ -245,7 +307,6 @@ const Projects = () => {
                 }
             })
             if(response && response.data){
-                console.log(response.data)
                 setProjectMembers(response.data.members)
             }
         }
@@ -500,17 +561,19 @@ const Projects = () => {
                 className="w-full px-4 py-2 border rounded mb-4"
               />
             <div className='flex gap-2 mb-2 items-center' >
-              <img
-                className="rounded-full border w-8 h-8"
-                src={defaultAvt}
-                alt="Avatar"
-              />
-              <img
-                className="rounded-full border w-8 h-8"
-                src={defaultAvt}
-                alt="Avatar"
-              />
-              <button onClick={()=>setAddMemberForm(!addMemberForm)} className=' text-white rounded-full bg-gray-300 w-8 h-8 text-center flex justify-center items-center'>
+              {
+                membersInTasks.map((member,index)=>(
+                  <img
+                  key={index}
+                  className="rounded-full border w-8 h-8"
+                  src={defaultAvt}
+                  alt="Avatar"
+                  />  
+                ))
+                
+              }
+            
+              <button onClick={handleClickAddMembers} className=' text-white rounded-full bg-gray-300 w-8 h-8 text-center flex justify-center items-center'>
                 <p>+</p>
               </button> 
               {
@@ -592,7 +655,9 @@ const Projects = () => {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border rounded"
               />
+              
             </div>
+            
             <textarea
               name="description"
               placeholder="Enter description"
@@ -600,6 +665,22 @@ const Projects = () => {
               onChange={handleChange}
               className="w-full px-4 py-2 border rounded mb-4"
             />
+            <div>
+              <input
+                type="text"
+                name="email"
+                placeholder='Enter email'
+                value={inputEmail} 
+                onKeyDown={handleKeyDown}
+                onChange={handleEmailChange}
+                className="w-full px-4 py-2 border rounded"
+              />
+              <ul>
+                {formAddTaskData.emails.map((email, index) => (
+                  <li key={index}>{email}</li> // hiển thị danh sách email đã nhập
+                ))}
+              </ul>
+            </div>
             <div className="flex justify-end">
               <button
                 className="bg-gray-500 text-white px-4 py-2 rounded mr-2"

@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Link,useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaGithub, FaGoogle } from 'react-icons/fa';
 import { calendarizeApi } from '../misc/Api';
-import { Modal, Button } from 'react-bootstrap';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +14,7 @@ const Signup = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
   const [modalTitle, setModalTitle] = useState('');
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,7 +30,7 @@ const Signup = () => {
     }
 
     try {
-      setError(''); 
+      setError('');
       const user = {
         name: formData.name,
         email: formData.email,
@@ -43,108 +42,123 @@ const Signup = () => {
         setModalTitle('Success');
         setModalMessage('You have successfully signed up!');
         setTimeout(() => {
-          navigate('/login'); 
-        }, 2000); 
+          navigate('/login');
+        }, 2000);
       }
     } catch (e) {
       setModalTitle('Error');
       setModalMessage('An error occurred: ' + e.message);
     } finally {
-      setShowModal(true); 
+      setShowModal(true);
     }
   };
 
   const handleClose = () => setShowModal(false);
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100">
-      <div className="border p-4 rounded shadow-sm" style={{ maxWidth: '400px', width: '100%' }}>
-        <h3 className="mb-4 text-center">Sign up</h3>
+    <div className="flex justify-center items-center h-screen">
+      <div className="border p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <h3 className="text-2xl font-semibold mb-6 text-center">Sign up</h3>
 
-        {error && <div className="alert alert-danger mb-3">{error}</div>}
+        {error && <div className="bg-red-100 text-red-700 p-3 mb-4 rounded">{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <label className="form-label">Name</label>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-medium mb-2">Name</label>
             <input
               name="name"
               onChange={handleChange}
               type="text"
-              className="form-control"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="Enter your name"
               value={formData.name}
             />
           </div>
 
-          <div className="mb-3">
-            <label className="form-label">Email address</label>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-medium mb-2">Email address</label>
             <input
               name="email"
               onChange={handleChange}
               type="email"
-              className="form-control"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="Enter email"
               value={formData.email}
             />
           </div>
 
-          <div className="mb-3">
-            <label className="form-label">Password</label>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-medium mb-2">Password</label>
             <input
               name="password"
               onChange={handleChange}
               type="password"
-              className="form-control"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="Password"
               value={formData.password}
             />
           </div>
 
-          <div className="mb-3">
-            <label className="form-label">Confirm password</label>
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-medium mb-2">Confirm password</label>
             <input
               name="confirmPassword"
               onChange={handleChange}
               type="password"
-              className="form-control"
+              className="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="Confirm password"
               value={formData.confirmPassword}
             />
           </div>
 
-          <button type="submit" className="btn btn-primary w-100 mb-3">Sign up</button>
+          <button
+            type="submit"
+            className="w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Sign up
+          </button>
         </form>
 
-        <div className="text-center">
-          <p className="mb-1">Or sign up with:</p>
-          <div className="d-flex justify-content-center mb-3">
-            <a href="#" className="text-dark mx-2">
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-600 mb-2">Or sign up with:</p>
+          <div className="flex justify-center space-x-4 mb-4">
+            <a href="#" className="text-gray-900 hover:text-gray-700">
               <FaGithub size={30} />
             </a>
-            <a href="#" className="text-danger mx-2">
+            <a href="#" className="text-red-600 hover:text-red-500">
               <FaGoogle size={30} />
             </a>
           </div>
         </div>
 
         <div className="text-center">
-          <p className="mb-0">
-            Already have an account? <Link to="/login">Login here</Link>
+          <p className="text-sm text-gray-600">
+            Already have an account?{' '}
+            <Link to="/login" className="text-blue-500 hover:text-blue-700">
+              Login here
+            </Link>
           </p>
         </div>
       </div>
 
-      <Modal show={showModal} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>{modalTitle}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>{modalMessage}</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 bg-black/30">
+          <div className="bg-white rounded-lg shadow-lg max-w-sm w-full">
+            <div className="px-4 py-3 border-b">
+              <h2 className="text-lg font-semibold">{modalTitle}</h2>
+            </div>
+            <div className="px-4 py-3">
+              <p>{modalMessage}</p>
+            </div>
+            <div className="px-4 py-3 border-t text-right">
+              <button onClick={handleClose} className="py-2 px-4 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
