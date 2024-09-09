@@ -7,9 +7,7 @@ import leftArrow from "../../assets/left-arrow.png";
 import { useAuth } from '../../components/context/AuthContext';
 
 const Projects = () => {
-    const { getUser } = useAuth();
-
-    console.log('Current user:', getUser());
+    const Auth = useAuth();
     const [error, setError] = useState(null)
     const [projects, setProjects] = useState([])
     const [selectedProject, setSelectedProject] = useState(null)
@@ -144,7 +142,7 @@ const Projects = () => {
     }
 
     try {
-      const response = await projectApiInstance.post('tasks', {
+      const response = await projectApiInstance.post('/tasks', {
         name: formAddTaskData.name,
         startDate: formAddTaskData.startDate,
         endDate: formAddTaskData.endDate,
@@ -153,7 +151,9 @@ const Projects = () => {
       }, 
       {
         headers: {
+        
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Auth.getUser().token.accessToken}`
         },
       })
 
@@ -161,15 +161,16 @@ const Projects = () => {
         console.log('Task added:', response.data)
       
 
-      console.log(formAddTaskData.emails.join(','))
 
-      const assignResponse = await projectApiInstance.post(`tasks/${response.data.id}/users`,null,
+      const assignResponse = await projectApiInstance.post(`/tasks/${response.data.id}/users`,null,
         {
           params :{
             emails: formAddTaskData.emails.join(',')
           },
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Auth.getUser().token.accessToken}`
+
           }
         }
       )
@@ -199,10 +200,15 @@ const Projects = () => {
 
   const handleShowEditTaskModal = async(task) => {
     try{
-      const response = await projectApiInstance.get(`tasks/${currentTask.id}/users`)
+      const response = await projectApiInstance.get(`/tasks/${currentTask.id}/users`,{
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Auth.getUser().token.accessToken}`
+
+        }
+      })
       if(response && response.data && response.status === 200)
       {
-        console.log(response.data)
         setMembersInTasks(response.data)
       }
     }catch(e){
@@ -226,6 +232,8 @@ const Projects = () => {
       const response = await projectApiInstance.put(`/tasks/${currentTask.id}`, {
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Auth.getUser().token.accessToken}`
+
         },
       })
       if (response && response.data) {
@@ -238,10 +246,12 @@ const Projects = () => {
   }
   const handleDeleteTask = async()=>{
     try {
-      const response = await projectApiInstance.delete(`tasks/${currentTask.id}`,
+      const response = await projectApiInstance.delete(`/tasks/${currentTask.id}`,
         {
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Auth.getUser().token.accessToken}`
+
           },
         }
       )
@@ -256,10 +266,12 @@ const Projects = () => {
   }
   const handleSaveTask = async()=>{
     try {
-      const response = await projectApiInstance.put('tasks',currentTask,
+      const response = await projectApiInstance.put('/tasks',currentTask,
         {
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Auth.getUser().token.accessToken}`
+
           },
         }
       )
@@ -276,13 +288,15 @@ const Projects = () => {
   const handleAddMember = async (task) => {
     try {
       console.log('task',task)
-      const response = await projectApiInstance.post(`tasks/${task.id}/users`,null,
+      const response = await projectApiInstance.post(`/tasks/${task.id}/users`,null,
         {
           params :{
             email: addMemberFormData.email
           },
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Auth.getUser().token.accessToken}`
+
           },
         }
       )
@@ -309,7 +323,12 @@ const Projects = () => {
                     projectId: project?.id,
                     from: formatDate(from),
                     to: formatDate(to) 
+                },
+                headers: {
+                  'Authorization': `Bearer ${Auth.getUser().token.accessToken}`
+  
                 }
+
             })
             if(response && response.data){
                 setProjectMembers(response.data.members)
@@ -330,12 +349,14 @@ const Projects = () => {
       try {
         const response = await projectApiInstance.get('', {
             params :{
-                userId : parseInt(getUser().data.sub)
+                userId: parseInt(Auth.getUser()?.data.sub)
             },
             headers: {
-                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${Auth.getUser()?.token.accessToken}`
+
             },
         })
+        console.log(response.data)
         if (response && response.data &&  response.data[0]) {
             setProjects(response.data)
             if(response.data[0])
@@ -548,13 +569,13 @@ const Projects = () => {
               <input
                 type="datetime-local"
                 value={currentTask.startDate}
-                onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
+                onChange={(e) => setCurrentTask({ ...currentTask, startDate: e.target.value })}
                 className="w-full px-4 py-2 border rounded mb-4"
               />
               <input
                 type="datetime-local"
                 value={currentTask.endDate}
-                onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
+                onChange={(e) => setCurrentTask({ ...currentTask, endDate: e.target.value })}
                 className="w-full px-4 py-2 border rounded mb-4"
               />
               
@@ -562,7 +583,7 @@ const Projects = () => {
             <input
                 type="text"
                 value={currentTask.description}
-                onChange={(e) => setCurrentTask({ ...currentTask, name: e.target.value })}
+                onChange={(e) => setCurrentTask({ ...currentTask, description: e.target.value })}
                 className="w-full px-4 py-2 border rounded mb-4"
               />
             <div className='flex gap-2 mb-2 items-center' >

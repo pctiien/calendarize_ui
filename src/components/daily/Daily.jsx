@@ -5,7 +5,7 @@ import COMPLETED from "../../assets/green-tick.png";
 import PENDING from "../../assets/stop-watch.png";
 import rightArrow from "../../assets/right-arrow.png";
 import leftArrow from "../../assets/left-arrow.png";
-import ConfirmModal from '../ConfirmModal.jsx';
+import ConfirmModal from './ConfirmModal.jsx';
 import { lifeTasksApiInstance } from '../../services/axios.js';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -111,13 +111,16 @@ const Daily = () => {
             return;
         }
         try {
-            console.log('Task confirmed:', selectedTask);
-            const response = await lifeTasksApiInstance.put(`tasks/${selectedTask.id}`, {
+            const response = await lifeTasksApiInstance.put(`/tasks/${selectedTask.id}`,{}, {
                 headers: {
                     'Content-Type': 'application/json',
-                }
+                    'Authorization': `Bearer ${Auth.getUser().token.accessToken}`
+                  }
             });
-            console.log(response);
+            if(response && response.data)
+            {
+                console.log('success',response.data);
+            }
         } catch (error) {
             console.error('Error done task:', error);
         } finally {
@@ -127,16 +130,17 @@ const Daily = () => {
 
     
     useEffect(() => {
-        const url = `tasks?userId=${parseInt(Auth.getUser().data.sub)}&from=${formatDate(from)}&to=${formatDate(to)}`;
+        const url = `/tasks?userId=${parseInt(Auth.getUser()?.data.sub)}&from=${formatDate(from)}&to=${formatDate(to)}`;
         const fetchTasks = async () => {
             try {
                 const response = await lifeTasksApiInstance.get(url, {
                     headers: {
                         'Content-Type': 'application/json',
-                    }
+                        'Authorization': `Bearer ${Auth.getUser()?.token.accessToken}`
+              
+                      }
                 });
                 setDailyTasks(response.data || [[]]);
-                console.log(response.data);
             } catch (error) {
                 console.error('There was a problem with the fetch operation:', error);
                 setError(error.message);
@@ -152,7 +156,7 @@ const Daily = () => {
             webSocketFactory: () => socket,
             onConnect: (frame) => {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe(`/user/${Auth.getUser().data.sub}/queue/lifetasks`, (message) => {
+                stompClient.subscribe(`/user/${Auth.getUser()?.data.sub}/queue/lifetasks`, (message) => {
                     console.log('Notification received:', message.body);
                 });
             },

@@ -28,7 +28,6 @@ const Login = () => {
       if (response && response.data) {
         const token = response.data;
         const data = parseJwt(token.accessToken);
-        console.log('data', data);
         const authenticatedUser = { data, token };
         console.log('user', authenticatedUser);
         Auth.userLogin(authenticatedUser);
