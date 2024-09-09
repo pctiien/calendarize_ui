@@ -18,7 +18,7 @@ root.render(
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />
         <Route path= "oauth2/callback" element={<OAuth2Redirect />} />
-        <Route index element={<Daily />} /> {/* Trang chính */}
+        <Route index element={<Daily />} /> 
 
       </Route>
     </Routes>

@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import rightArrow from "../../assets/right-arrow.png";
 import leftArrow from "../../assets/left-arrow.png";
+import { useAuth } from '../../components/context/AuthContext';
+
 const Projects = () => {
+    const { getUser } = useAuth();
+
+    console.log('Current user:', getUser());
     const [error, setError] = useState(null)
     const [projects, setProjects] = useState([])
     const [selectedProject, setSelectedProject] = useState(null)
@@ -90,10 +95,10 @@ const Projects = () => {
     emails: [],
   })
   const formatDate = (date) => {
-    // Đảm bảo date là đối tượng Date
+
     const validDate = new Date(date);
     if (isNaN(validDate.getTime())) {
-      return ''; // Trả về chuỗi trống nếu date không hợp lệ
+      return ''; 
     }
     const year = validDate.getFullYear();
     const month = String(validDate.getMonth() + 1).padStart(2, '0');
@@ -103,7 +108,7 @@ const Projects = () => {
   const formatDateStr = (date) => {
       const validDate = new Date(date);
       if (isNaN(validDate.getTime())) {
-        return ''; // Trả về chuỗi trống nếu date không hợp lệ
+        return ''; 
       }
       const year = validDate.getFullYear();
       const month = String(validDate.getMonth() + 1).padStart(2, '0');
@@ -325,7 +330,7 @@ const Projects = () => {
       try {
         const response = await projectApiInstance.get('', {
             params :{
-                userId : 1
+                userId : parseInt(getUser().data.sub)
             },
             headers: {
                 'Content-Type': 'application/json',

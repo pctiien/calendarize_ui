@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { lifeTasksApiInstance } from '../../services/axios.js';
-import PropTypes from 'prop-types';
 
 const LifeTaskModal = ({ show, handleClose, task }) => {
   const [formData, setFormData] = useState({
@@ -51,7 +50,6 @@ const LifeTaskModal = ({ show, handleClose, task }) => {
       setLoading(false);
       return;
     }
-    console.log("kaka")
 
     try {
       if (task && task.id) {

@@ -5,8 +5,9 @@ import './Header.css'; // Import CSS mới
 import checkList from '../assets/checklist.png';
 import teamProject from '../assets/group-chat.png';
 import netWork from '../assets/network.png';
-
+import {useAuth} from '../components/context/AuthContext'
 const Header = () => {
+  const Auth = useAuth()
   const [activeItem, setActiveItem] = useState('');
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
@@ -17,6 +18,10 @@ const Header = () => {
   const toggleDropdown = () => {
     setDropdownOpen(!isDropdownOpen);
   };
+  const handleLogout = ()=>{
+    Auth.userLogout()
+    toggleDropdown()
+  }
 
   return (
     <div
@@ -70,7 +75,7 @@ const Header = () => {
         {isDropdownOpen && (
           <div className="dropdown">
             <Link to="/login" onClick={toggleDropdown} className="dropdown-link">Login</Link>
-            <Link to="/" onClick={toggleDropdown} className="dropdown-link">Logout</Link>
+            <Link to="/" onClick={handleLogout} className="dropdown-link">Logout</Link>
           </div>
         )}
       </div>

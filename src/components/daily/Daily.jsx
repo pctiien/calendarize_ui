@@ -10,14 +10,15 @@ import { lifeTasksApiInstance } from '../../services/axios.js';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import OVERDUE from '../../assets/overdue.png';
+import {useAuth} from '../../components/context/AuthContext.jsx'
 const Daily = () => {
+    const Auth = useAuth()
     const [showForm, setShowForm] = useState(false);
     const [dailyTasks, setDailyTasks] = useState([[]]);
     const [error, setError] = useState(null);
     const [show, setShow] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [client, setClient] = useState(null);
     const [getClick,setGetClick] = useState(false);
     const [from, setFrom] = useState(() => {
         const today = new Date();
@@ -126,7 +127,7 @@ const Daily = () => {
 
     
     useEffect(() => {
-        const url = `tasks?userId=1&from=${formatDate(from)}&to=${formatDate(to)}`;
+        const url = `tasks?userId=${parseInt(Auth.getUser().data.sub)}&from=${formatDate(from)}&to=${formatDate(to)}`;
         const fetchTasks = async () => {
             try {
                 const response = await lifeTasksApiInstance.get(url, {
@@ -151,7 +152,7 @@ const Daily = () => {
             webSocketFactory: () => socket,
             onConnect: (frame) => {
                 console.log('Connected: ' + frame);
-                stompClient.subscribe('/user/1/queue/lifetasks', (message) => {
+                stompClient.subscribe(`/user/${Auth.getUser().data.sub}/queue/lifetasks`, (message) => {
                     console.log('Notification received:', message.body);
                 });
             },
